@@ -40,8 +40,7 @@ class UserAdmin(ModelView, model=User):
     column_list = [User.id, User.fullname, User.username,
                    User.points, User.stars, User.avatar]
     
-    form_columns = [User.id, User.fullname, User.username,
-                   User.points, User.stars]
+    form_columns = ('id', 'username')
 
 
     column_formatters = {User.avatar: lambda m, a: Markup(
