@@ -32,6 +32,7 @@ def webapp_user_middleware(func):
         except ValueError:
             if TEST_MODE:
                 user = await get_user(user_id=TEST_USER_ID)
+                print(user)
 
                 webapp_request = WebAppRequest(
                     webapp_user=user, **request.__dict__)
