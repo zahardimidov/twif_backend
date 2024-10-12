@@ -21,18 +21,17 @@ def webapp_user_middleware(func):
         if str(request.url).endswith(WEBHOOK_PATH) or request.method == 'GET':
             return await func(request, *args, **kwargs)
 
-        body = await request.body()
-        data: dict = json.loads(body.decode())
-        init_data = data.get('initData')
-
         error_text = 'Open this page from telegram'
 
         try:
+            body = await request.body()
+            data: dict = json.loads(body.decode())
+            init_data = data.get('initData')
+            
             parsed_data = dict(parse_qsl(init_data))
         except ValueError:
             if TEST_MODE:
                 user = await get_user(user_id=TEST_USER_ID)
-                print(user)
 
                 webapp_request = WebAppRequest(
                     webapp_user=user, **request.__dict__)

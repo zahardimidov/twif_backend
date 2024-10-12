@@ -61,7 +61,7 @@ async def get_user_vote(user_id):
 
 async def get_leaderboard(limit=20, offset = 0):
     async with async_session() as session:
-        leaders = await session.scalars(select(User).order_by(desc(User.votes)).limit(limit).offset(offset))
+        leaders = await session.scalars(select(User).order_by(desc(User.points)).limit(limit).offset(offset))
 
         return list(leaders)
 

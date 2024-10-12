@@ -1,9 +1,11 @@
-from pydantic import BaseModel
+from fastapi import Query
+from pydantic import BaseModel, Field
 from .users import UserResponse
+from typing import Optional
 
 class LeaderboardRequest(BaseModel):
-    limit: int = 20
-    offset: int = 0
+    limit: Optional[int] = Field(Query(...))
+    offset: Optional[str] = Field(Query(...))
 
 class LeaderboardResponse(BaseModel):
     leaders: list[UserResponse]

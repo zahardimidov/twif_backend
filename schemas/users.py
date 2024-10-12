@@ -15,6 +15,7 @@ class UserResponse(BaseModel):
 class NFT(BaseModel):
     id: int
     title: str
+    amount: int
 
 class UserBalance(BaseModel):
     twif: int
