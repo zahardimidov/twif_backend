@@ -3,17 +3,20 @@ from fastapi import APIRouter
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from schemas import *
+from middlewares import webapp_user_middleware
 
 router = APIRouter(tags=['Пользователи'])
 
 
 @router.post('/me', response_model=UserResponse)
+@webapp_user_middleware
 async def me(request: WebAppRequest):
     data = jsonable_encoder({'party_id': request.webapp_user.id})
 
     return JSONResponse(content=data)
 
 @router.post('/balance', response_model=UserBalance)
+@webapp_user_middleware
 async def get_balance(request: WebAppRequest):
     data = jsonable_encoder({})
 
