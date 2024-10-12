@@ -40,11 +40,6 @@ class UserAdmin(ModelView, model=User):
     column_list = [User.id, User.fullname, User.username,
                    User.points, User.stars, User.avatar]
 
-    #can_create = False
-    #can_edit = True
-    form_widget_args_update = dict(
-        id=dict(readonly=True), username=dict(readonly=True))
-
     column_formatters = {User.avatar: lambda m, a: Markup(
         f'<img style="height: 40px" src="{m.avatarURL}"/>')}
 
