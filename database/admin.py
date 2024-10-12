@@ -41,6 +41,7 @@ class UserAdmin(ModelView, model=User):
                    User.points, User.stars, User.avatar]
     
     form_columns = ('id', 'username',)
+    column_exclude_list = []
 
 
     column_formatters = {User.avatar: lambda m, a: Markup(
