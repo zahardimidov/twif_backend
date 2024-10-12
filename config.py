@@ -9,9 +9,9 @@ AVATARS_DIR = BASE_DIR.joinpath('/media/avatars/')
 TEST_MODE = True
 TEST_USER_ID = 749234118
 
-WEBAPP_URL = 'https://playcloud.pro'
+WEBAPP_URL = 'https://a39e-91-236-14-136.ngrok-free.app'
 BOT_TOKEN = '7396897324:AAHzNa_ncI4sf0hkg8M0txRt9KWZSnXFqC0'
-WEBHOOK_HOST = 'https://playcloud.pro'
+WEBHOOK_HOST = 'https://a39e-91-236-14-136.ngrok-free.app'
 WEBHOOK_PATH = 'webhook'
 ENGINE = "sqlite+aiosqlite:///./database/database.db"
 ADMIN_USERNAME = 'admin'

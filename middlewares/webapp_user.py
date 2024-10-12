@@ -20,14 +20,6 @@ def webapp_user_middleware(func):
     async def wrapper(request: Request, *args, **kwargs):
         if str(request.url).endswith(WEBHOOK_PATH) or request.method == 'GET':
             return await func(request, *args, **kwargs)
-        
-        if TEST_MODE:
-            user = await get_user(user_id=TEST_USER_ID)
-
-            webapp_request = WebAppRequest(
-                webapp_user=user, **request.__dict__)
-
-            return await func(webapp_request, *args, **kwargs)
 
         body = await request.body()
         data: dict = json.loads(body.decode())
@@ -38,6 +30,14 @@ def webapp_user_middleware(func):
         try:
             parsed_data = dict(parse_qsl(init_data))
         except ValueError:
+            if TEST_MODE:
+                user = await get_user(user_id=TEST_USER_ID)
+
+                webapp_request = WebAppRequest(
+                    webapp_user=user, **request.__dict__)
+
+                return await func(webapp_request, *args, **kwargs)
+        
             return HTTPException(status_code=401, detail=error_text)
         if "hash" not in parsed_data:
             return HTTPException(status_code=401, detail=error_text)

@@ -42,4 +42,4 @@ async def home(request: WebAppRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=4500, forwarded_allow_ips='*')
+    uvicorn.run(app, host="0.0.0.0", port=4550, forwarded_allow_ips='*')
