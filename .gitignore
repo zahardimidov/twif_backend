@@ -1,7 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 venv/
-database.db
+#database.db
 test.py
 .env/
 
