@@ -39,6 +39,10 @@ authentication_backend = AdminAuth(secret_key="secret")
 class UserAdmin(ModelView, model=User):
     column_list = [User.id, User.fullname, User.username,
                    User.points, User.stars, User.avatar]
+    
+    form_columns = [User.id, User.fullname, User.username,
+                   User.points, User.stars]
+
 
     column_formatters = {User.avatar: lambda m, a: Markup(
         f'<img style="height: 40px" src="{m.avatarURL}"/>')}
