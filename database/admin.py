@@ -41,8 +41,15 @@ class UserAdmin(ModelView, model=User):
                    User.points, User.stars, User.avatar]
     
     form_columns = ('id', 'username',)
-    column_exclude_list = []
 
+    # Добавляем form_args для поля id
+    form_args = {
+        'id': {
+            'label': 'User ID',
+            'validators': [],
+            'render_kw': {'readonly': False}  # Убедитесь, что поле не является только для чтения
+        }
+    }
 
     column_formatters = {User.avatar: lambda m, a: Markup(
         f'<img style="height: 40px" src="{m.avatarURL}"/>')}
