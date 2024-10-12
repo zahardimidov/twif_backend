@@ -1,0 +1,3 @@
+from middlewares.image_cache_middleware import ImageCacheMiddleware
+from middlewares.webapp_user import webapp_user_middleware
+from middlewares.register_user import RegisterUserMiddleware
