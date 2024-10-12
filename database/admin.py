@@ -39,17 +39,9 @@ authentication_backend = AdminAuth(secret_key="secret")
 class UserAdmin(ModelView, model=User):
     column_list = [User.id, User.fullname, User.username,
                    User.points, User.stars, User.avatar]
-    
-    form_columns = ('id', 'username',)
 
-    # Добавляем form_args для поля id
-    form_args = {
-        'id': {
-            'label': 'User ID',
-            'validators': [],
-            'render_kw': {'readonly': False}  # Убедитесь, что поле не является только для чтения
-        }
-    }
+    form_widget_args_update = dict(
+        id=dict(readonly=False), username=dict(readonly=False))
 
     column_formatters = {User.avatar: lambda m, a: Markup(
         f'<img style="height: 40px" src="{m.avatarURL}"/>')}
