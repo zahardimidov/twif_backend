@@ -1,7 +1,10 @@
+from typing import List
+
+from sqlalchemy import desc, func, select
+
 from database.models import MemberStatusEnum, Party, PartyMember, User
 from database.session import async_session
-from sqlalchemy import func, select, desc
-from typing import List
+
 
 async def get_user(user_id) -> User:
     async with async_session() as session:
@@ -9,12 +12,18 @@ async def get_user(user_id) -> User:
 
         return user
     
+async def get_party(party_id) -> Party:
+    async with async_session() as session:
+        party = await session.scalar(select(Party).where(Party.id == party_id))
+
+        return party
+
+
 async def search_users(query) -> List[User]:
     async with async_session() as session:
         users = await session.scalars(select(User).filter(User.username.like(f'%{query}%'), User.fullname.like(f'%{query}%')))
 
     return list(users)
-
 
 
 async def set_user(user_id, **kwargs) -> User:
@@ -62,18 +71,38 @@ async def vote_party(party_id, user_id):
 
 async def get_user_vote(user_id):
     async with async_session() as session:
-        vote = session.scalar(select(PartyMember).where(PartyMember.member_id == user_id, PartyMember.member_status == MemberStatusEnum.voter))
+        vote = await session.scalar(select(PartyMember).where(
+            PartyMember.member_id == user_id, PartyMember.member_status == MemberStatusEnum.voter))
 
         return vote
 
-async def get_leaderboard(limit=20, offset = 0):
+
+async def get_user_party(user_id):
+    async with async_session() as session:
+        party_id = await session.scalar(select(PartyMember.party_id).where(
+            PartyMember.member_id == user_id))
+
+        if party_id:
+            return party_id
+
+
+async def get_party_member(party_id, user_id):
+    async with async_session() as session:
+        member: PartyMember = await session.scalar(select(PartyMember).where(PartyMember.member_id == user_id, Party.id == party_id, PartyMember.member_status.in_([
+                                             MemberStatusEnum.creator, MemberStatusEnum.founder, MemberStatusEnum.member])))
+
+        if member:
+            return member.member_status
+
+
+async def get_leaderboard(limit=20, offset=0):
     async with async_session() as session:
         leaders = await session.scalars(select(User).order_by(desc(User.points)).limit(limit).offset(offset))
 
         return list(leaders)
 
 
-async def get_top_parties(limit=10, offset = 0):
+async def get_top_parties(limit=10, offset=0):
     query = (
         select(Party)
         .join(PartyMember)
@@ -92,4 +121,3 @@ async def get_top_parties(limit=10, offset = 0):
 
 async def save_game_results():
     ...
-

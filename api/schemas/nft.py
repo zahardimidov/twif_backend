@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Dict
 
+
 class NFTPreview(BaseModel):
     resolution: str
     url: str

@@ -1,8 +1,7 @@
 from fastapi import Request
-from schemas.leaders import *
-from schemas.party import *
-from schemas.users import *
-from schemas.nft import *
+from api.schemas.party import *
+from api.schemas.users import *
+from api.schemas.nft import *
 
 
 class WebAppRequest(Request):

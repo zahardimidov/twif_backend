@@ -64,7 +64,7 @@ class UserAdmin(ModelView, model=User):
 
 
 class PartyAdmin(ModelView, model=Party):
-    column_list = [Party.id, Party.title, Party.quantity, Party.logo]
+    column_list = [Party.logo, Party.title, Party.quantity, Party.id]
 
     column_formatters = {Party.logo: lambda m, a: showLogo(model=m)}
 

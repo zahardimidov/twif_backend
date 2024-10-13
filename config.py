@@ -9,9 +9,9 @@ AVATARS_DIR = BASE_DIR.joinpath('/media/avatars/')
 TEST_MODE = True
 TEST_USER_ID = 749234118
 
-WEBAPP_URL = 'https://38a7-91-236-14-136.ngrok-free.app'
+WEBAPP_URL = 'https://8f9e-2a00-1fa2-425d-849a-b995-658f-cbaa-24ec.ngrok-free.app'
 BOT_TOKEN = '7396897324:AAHzNa_ncI4sf0hkg8M0txRt9KWZSnXFqC0'
-WEBHOOK_HOST = 'https://38a7-91-236-14-136.ngrok-free.app'
+WEBHOOK_HOST = 'https://8f9e-2a00-1fa2-425d-849a-b995-658f-cbaa-24ec.ngrok-free.app'
 WEBHOOK_PATH = 'webhook'
 ENGINE = "sqlite+aiosqlite:///./database/database.db"
 ADMIN_USERNAME = 'admin'

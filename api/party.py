@@ -1,51 +1,70 @@
-from fastapi import APIRouter, Depends, File, UploadFile
+from decimal import Decimal
+from functools import wraps
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, Response
 
-from database.models import MemberStatusEnum
-from database.requests import create_party, get_user, get_user_vote, join_party
-from middlewares.webapp_user import validate_data, webapp_user_middleware
-from schemas import *
+from api.schemas import *
+from database.models import MemberStatusEnum, Party
+from database.requests import (create_party, get_party_member, get_user,
+                               get_user_party, get_user_vote, join_party)
+from middlewares.webapp_user import webapp_user_middleware
 
 router = APIRouter(prefix='/party', tags=['Партии'])
 
 
+def validate_party(party: Party):
+    p = Decimal(str(party.founder_share)) + Decimal(str(party.members_share)) + \
+        Decimal(str(party.project_share)) + Decimal(str(party.voters_share))
+    if p != 1:
+        raise HTTPException(
+            status_code=400, detail='The sum of the distribution shares cannot differ from 1')
+
+
+def without_party(func):
+    @wraps(func)
+    async def wrapper(request: WebAppRequest, *args, **kwargs):
+        vote = await get_user_vote(user_id=request.webapp_user.id)
+
+        if bool(vote):
+            raise HTTPException(
+                status_code=400, detail='You have already voted another party')
+
+        party = await get_user_party(user_id=request.webapp_user.id)
+
+        if bool(party):
+            raise HTTPException(
+                status_code=400, detail='You are already taking part in another party')
+
+        return await func(request, *args, **kwargs)
+
+    return wrapper
+
+
 @router.post('/create', response_model=PartyResponse)
-async def create_party_handler(party: PartyCreate = Depends(), logo: UploadFile = File(...)):
+@webapp_user_middleware
+@without_party
+async def create_party_handler(request: WebAppRequest, party: PartyCreate = Depends(), logo: UploadFile = File(...)):
     data = dict(party)
-    user_data = validate_data(data.pop('initData'))
 
-    if not user_data:
-        return Response(status_code=400)
-    
+    validate_party(party)
 
-    if party.founder_share + party.members_share + party.project_share + party.voters_share != 1:
-        return JSONResponse(status_code=400, content=jsonable_encoder({
-            'msg': 'Sharing parts should be equal 1'
-        }))
-
-    party = await create_party(creator_id=user_data['id'], logo=logo, **data)
-    print(logo.filename)
+    await create_party(creator_id=request.webapp_user.id, logo=logo, **data)
 
     return JSONResponse(status_code=201, content=jsonable_encoder(data))
 
 
 @router.post('/squad/create', response_model=PartyResponse)
-async def create_party_handler(squad: SquadCreate = Depends(), logo: UploadFile = File(...)):
-    data = dict(squad)
-    user_data = validate_data(data.pop('initData'))
+@webapp_user_middleware
+@without_party
+async def create_squad_handler(request: WebAppRequest, party: SquadCreate = Depends(), logo: UploadFile = File(...)):
+    data = dict(party)
 
-    if not user_data:
-        return Response(status_code=400)
-    
+    validate_party(party)
 
-    if squad.founder_share + squad.members_share + squad.project_share + squad.voters_share != 1:
-        return JSONResponse(status_code=400, content=jsonable_encoder({
-            'msg': 'Sharing parts should be equal 1'
-        }))
-
-    party = await create_party(creator_id=user_data['id'], **data)
-    for user_id in squad.founder_ids:
+    party = await create_party(creator_id=request.webapp_user.id, **data)
+    for user_id in party.founder_ids:
         user = await get_user(user_id)
 
         if not user:
@@ -58,26 +77,19 @@ async def create_party_handler(squad: SquadCreate = Depends(), logo: UploadFile 
 
 @router.post('/join')
 @webapp_user_middleware
-async def join_party_handler(request: WebAppRequest):
-    data = await request.json()
-    party_id = data['party_id']
+@without_party
+async def join_party_handler(request: WebAppRequest, party: JoinPartyRequest):
+    await join_party(party_id=party.party_id, user_id=request.webapp_user.id)
 
-    await join_party(party_id=party_id, user_id=request.webapp_user.id)
-
-    return Response(status=200)
+    return JSONResponse(status_code=200, content=jsonable_encoder({
+        'msg': 'success'
+    }))
 
 
 @router.post('/vote')
 @webapp_user_middleware
-async def vote_party_handler(request: WebAppRequest):
-    data = await request.json()
-    party_id = data['party_id']
+@without_party
+async def vote_party_handler(request: WebAppRequest, party: VotePartyRequest):
+    await join_party(party_id=party.party_id, user_id=request.webapp_user.id)
 
-    vote = await get_user_vote(user_id=request.webapp_user.id)
-
-    if bool(vote):
-        return JSONResponse(status_code=400, content=jsonable_encoder(dict(info='You have already voted another party')))
-
-    await join_party(party_id=party_id, user_id=request.webapp_user.id)
-
-    return Response(status=200)
+    return Response(status_code=200)

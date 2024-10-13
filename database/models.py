@@ -92,3 +92,16 @@ class PartyMember(Base):
     def __repr__(self) -> str:
         return str(self.member) + ' - ' + str(self.party)
 
+
+
+class Wallet(Base):
+    __tablename__ = 'wallets'
+
+    address = mapped_column(String, primary_key=True)
+
+    user_id = mapped_column(ForeignKey('users.id'))
+    user: Mapped['User'] = relationship()
+
+    def __repr__(self) -> str:
+        return str(self.user) + ' - ' + str(self.address)
+

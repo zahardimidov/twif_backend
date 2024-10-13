@@ -1,4 +1,4 @@
-from api import party_router, users_router, nft_router
+from api import party_router, users_router, nft_router, schemas
 from bot import process_update, run_bot_webhook
 from middlewares import ImageCacheMiddleware, webapp_user_middleware
 from config import BASE_DIR, WEBHOOK_PATH
@@ -7,7 +7,6 @@ from database.session import engine, run_database
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from schemas import WebAppRequest
 from utils import path_exists
 
 
@@ -38,7 +37,7 @@ app.add_middleware(
 
 @app.get('/', response_class=HTMLResponse)
 @webapp_user_middleware
-async def home(request: WebAppRequest):
+async def home(request: schemas.WebAppRequest):
     return f'<div style="display: flex; width: 100vw; height: 100vh; justify-content: center; background-color: #F9F9F9; color: #03527E;"> <b style="margin-top:35vh">Welcome!</b> </div>'
 
 if __name__ == "__main__":
