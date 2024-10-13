@@ -1,13 +1,20 @@
 from database.models import MemberStatusEnum, Party, PartyMember, User
 from database.session import async_session
 from sqlalchemy import func, select, desc
-
+from typing import List
 
 async def get_user(user_id) -> User:
     async with async_session() as session:
         user = await session.scalar(select(User).where(User.id == user_id))
 
         return user
+    
+async def search_users(query) -> List[User]:
+    async with async_session() as session:
+        users = await session.scalars(select(User).filter(User.username.like(f'%{query}%'), User.fullname.like(f'%{query}%')))
+
+    return list(users)
+
 
 
 async def set_user(user_id, **kwargs) -> User:

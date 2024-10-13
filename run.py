@@ -1,4 +1,4 @@
-from api import party_router, users_router
+from api import party_router, users_router, nft_router
 from bot import process_update, run_bot_webhook
 from middlewares import ImageCacheMiddleware, webapp_user_middleware
 from config import BASE_DIR, WEBHOOK_PATH
@@ -22,6 +22,7 @@ app = FastAPI(lifespan=on_startup)
 app.add_api_route('/'+WEBHOOK_PATH, endpoint=process_update, methods=['post'])
 app.include_router(users_router)
 app.include_router(party_router)
+app.include_router(nft_router)
 
 app.add_middleware(ImageCacheMiddleware)
 app.add_middleware(

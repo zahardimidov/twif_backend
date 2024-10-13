@@ -12,11 +12,11 @@ class UserResponse(BaseModel):
     points: int
     stars: int
 
-class NFT(BaseModel):
-    id: int
-    title: str
-    amount: int
+class SearchUsersResponse(BaseModel):
+    users: list[UserResponse]
 
-class UserBalance(BaseModel):
+class UserRefLink(BaseModel):
+    link: str
+
+class UserTwifBalance(BaseModel):
     twif: int
-    nfts: list[NFT]

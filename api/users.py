@@ -4,9 +4,13 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from schemas import *
 from middlewares import webapp_user_middleware
-from database.requests import get_user, get_leaderboard
+from database.requests import get_user, get_leaderboard, search_users
+from aiogram.utils.deep_linking import create_start_link
+from aiogram import Bot
+from ton import get_twif_balance
+from config import BOT_TOKEN
 
-router = APIRouter(tags=['Пользователи'])
+router = APIRouter(prefix='/users', tags=['Пользователи'])
 
 
 @router.post('/me', response_model=UserResponse)
@@ -16,13 +20,28 @@ async def me(request: WebAppRequest):
 
     return me
 
+@router.get('/search', response_model=SearchUsersResponse)
+async def search_users_by_name(
+    query: str = Query(...),
+):
+    users = await search_users(query=query)
+    
+    return dict(users=users)
 
-@router.post('/balance', response_model=UserBalance)
+@router.post('/ref', response_model=UserRefLink)
 @webapp_user_middleware
-async def get_balance(request: WebAppRequest):
-    data = jsonable_encoder({})
+async def get_ref_link(request: WebAppRequest):
+    link = await create_start_link(Bot(BOT_TOKEN), str(request.webapp_user.id), encode=True)
 
-    return JSONResponse(content=data)
+    return UserRefLink(link=link)
+
+
+@router.post('/twif', response_model=UserTwifBalance)
+@webapp_user_middleware
+async def get_user_twif_balance(request: WebAppRequest):
+    balance = await get_twif_balance()
+
+    return UserTwifBalance(twif=balance)
 
 
 @router.get('/leaderboard', response_model=LeaderboardResponse)

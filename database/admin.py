@@ -64,8 +64,14 @@ class UserAdmin(ModelView, model=User):
 
 
 class PartyAdmin(ModelView, model=Party):
-    column_list = [Party.id, Party.title, Party.quantity]
+    column_list = [Party.id, Party.title, Party.quantity, Party.logo]
 
+    column_formatters = {Party.logo: lambda m, a: showLogo(model=m)}
+
+def showLogo(model):
+    filename = str(model.logo).split('/')[-1]
+
+    return Markup(f'<img style="height: 40px" src="/media/logos/{filename}"/>')
 
 class PartyMemberAdmin(ModelView, model=PartyMember):
     column_list = [PartyMember.party,

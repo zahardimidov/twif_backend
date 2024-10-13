@@ -13,12 +13,15 @@ class ImageCacheMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         # Проверяем, запрашивается ли изображение
-        if request.url.path.startswith('/media/avatars/'):
+        if request.url.path.startswith('/media/'):
             filename = request.url.path.split('/')[-1]
             if filename in self.cache:
                 return self.cache[filename]
             else:
-                path = BASE_DIR.joinpath(f'media/avatars/').joinpath(filename)
+                if request.url.path.startswith('/media/avatars'):
+                    path = BASE_DIR.joinpath(f'media/avatars/').joinpath(filename)
+                elif request.url.path.startswith('/media/logos'):
+                    path = BASE_DIR.joinpath(f'media/logos/').joinpath(filename)
 
                 if not await path_exists(path):
                     return Response(status_code=404)

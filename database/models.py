@@ -72,8 +72,8 @@ class Party(Base):
     project_share = mapped_column(Float)
     voters_share = mapped_column(Float)
 
-    #nft_requirements = mapped_column(Integer, nullable=True, default=None)
-    #twif_requirements = mapped_column(Integer, nullable=True, default=None)
+    nft_requirement = mapped_column(String, nullable=True, default=None)
+    twif_requirement = mapped_column(Integer, nullable=True, default=None)
 
     def __repr__(self) -> str:
         return self.title
@@ -91,3 +91,4 @@ class PartyMember(Base):
 
     def __repr__(self) -> str:
         return str(self.member) + ' - ' + str(self.party)
+

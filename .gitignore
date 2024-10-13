@@ -5,3 +5,5 @@ venv/
 test.py
 .env/
 
+*.json
+*.png
