@@ -52,7 +52,6 @@ class UserResponse(BaseModel):
 
     points: int
     stars: int
-    last_attempt: datetime
 
 class SaveGame(InitDataRequest):
     points: int
