@@ -51,7 +51,8 @@ async def get_leaderboard_handler(
 @router.post('/me', response_model=UserResponse)
 @webapp_user_middleware
 async def me(request: WebAppRequest, initData: InitDataRequest):
-    return request.webapp_user
+    user = request.webapp_user
+    return UserResponse(id=user.id, username=user.username, fullname=user.fullname, avatar=user.avatar, points=user.points, stars=user.stars)
 
 @router.post('/ref', response_model=RefLinkResponse)
 @webapp_user_middleware
