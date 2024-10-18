@@ -52,7 +52,7 @@ async def get_leaderboard_handler(
 @webapp_user_middleware
 async def me(request: WebAppRequest, initData: InitDataRequest):
     user = request.webapp_user
-    return JSONResponse(status_code=200, content=jsonable_encoder(user))
+    return Response(status_code=200) # JSONResponse(status_code=200, content=jsonable_encoder(user))
 
 @router.post('/ref', response_model=RefLinkResponse)
 @webapp_user_middleware
