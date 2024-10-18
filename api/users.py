@@ -2,7 +2,7 @@ from aiogram import Bot
 from aiogram.utils.deep_linking import create_start_link
 from api.schemas import *
 from config import BOT_TOKEN
-from database.requests import (complete_task, delete_user_wallet,
+from database.requests import (complete_task, delete_user_wallet, set_user,
                                get_leaderboard, get_user_task, get_user_wallet,
                                get_users_ids, search_users, set_user, get_tasks,
                                set_user_wallet, users_complete_tasks)
@@ -13,6 +13,13 @@ from middlewares import webapp_user_middleware
 from ton_requests import get_account_nft, get_twif_balance
 
 router = APIRouter(prefix='/users', tags=['Пользователи'])
+
+
+@router.post('/create_user_just_test')
+async def get_all_users_ids(user: CreateUser):
+    set_user(user_id=user.id, username = user.username, fullname = user.fullname)
+
+    return Response(status_code=200)
 
 
 @router.get('/all', response_model=UsersList, include_in_schema=False)

@@ -5,6 +5,11 @@ from pydantic import BaseModel, Field
 from datetime import datetime, timedelta, timezone
 
 
+class CreateUser(BaseModel):
+    id: int
+    username: str
+    fullname: str
+
 class InitDataRequest(BaseModel):
     initData: str = '{}'
 
