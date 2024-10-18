@@ -16,8 +16,8 @@ router = APIRouter(prefix='/users', tags=['Пользователи'])
 
 
 @router.post('/create_user_just_test')
-async def get_all_users_ids(user: CreateUser):
-    set_user(user_id=user.id, username = user.username, fullname = user.fullname)
+async def create_user_just_test(user: CreateUser):
+    await set_user(user_id=user.id, username = user.username, fullname = user.fullname)
 
     return Response(status_code=200)
 
