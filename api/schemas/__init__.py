@@ -2,6 +2,7 @@ from fastapi import Request
 from api.schemas.party import *
 from api.schemas.users import *
 from api.schemas.nft import *
+from api.schemas.transaction import *
 
 
 class WebAppRequest(Request):

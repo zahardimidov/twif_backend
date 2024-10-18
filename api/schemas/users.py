@@ -1,7 +1,8 @@
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 from fastapi import Query
 from pydantic import BaseModel, Field
+from datetime import datetime, timedelta, timezone
 
 
 class InitDataRequest(BaseModel):
@@ -11,8 +12,32 @@ class LeaderboardRequest(BaseModel):
     limit: Optional[int] = Field(Query(...))
     offset: Optional[str] = Field(Query(...))
 
+class ConnectWalletRequest(InitDataRequest):
+    address: str
+
+class SetUserDailyBoost(InitDataRequest):
+    boost_id: str
+
+
+class UserCompleteTask(InitDataRequest):
+    task_id: str
 
 ### RESPONSES ###
+
+class UsersList(BaseModel):
+    users: List[int]
+
+class UserBoostsForNFT(BaseModel):
+    boosts: Dict[str, float]
+
+class AllDailyBoost(BaseModel):
+    boosts: List['DailyBoost']
+
+class DailyBoost(BaseModel):
+    id: str
+    stars: int
+    multiplier: Optional[float] = Field(None)
+    nolimit: Optional[bool] = Field(False)
 
 class UserResponse(BaseModel):
     id: int
@@ -22,6 +47,10 @@ class UserResponse(BaseModel):
 
     points: int
     stars: int
+    last_attempt: datetime
+
+class SaveGame(InitDataRequest):
+    points: int
 
 class SearchUsersResponse(BaseModel):
     users: list[UserResponse]
@@ -34,3 +63,15 @@ class LeaderboardResponse(BaseModel):
 
 class RefLinkResponse(BaseModel):
     link: str
+
+class TaskResponse(BaseModel):
+    id: str
+    text: str
+    url: str
+    reward: int
+
+class UserCompletedTasks(BaseModel):
+    completed: List[Any]
+
+class Tasks(BaseModel):
+    tasks: List[TaskResponse]

@@ -9,7 +9,7 @@ from aiogram.utils.deep_linking import decode_payload
 from config import BASE_DIR
 
 
-async def extract_referral_id(message_text: str):
+async def extract_referrer(message_text: str):
     try:
         payload = message_text.removeprefix('/start').strip()
 
@@ -18,7 +18,7 @@ async def extract_referral_id(message_text: str):
 
         payload_user_id = decode_payload(payload)
         referrer = await get_user(user_id=payload_user_id)
-        return referrer.id
+        return referrer
     except Exception as e:
         pass
 
@@ -37,7 +37,7 @@ class RegisterUserMiddleware(BaseMiddleware):
         user = await get_user(user_id=event.from_user.id)
 
         if not user:
-            referrer_id = await extract_referral_id(event.text)
+            referrer = await extract_referrer(event.text)
             photos = await event.bot.get_user_profile_photos(user_id=event.from_user.id)
 
             if photos.photos:
@@ -48,8 +48,8 @@ class RegisterUserMiddleware(BaseMiddleware):
             else:
                 print('NO PHOTO')
 
-            print('REFERRER_ID', referrer_id)
-            user = await set_user(user_id=event.from_user.id, fullname=event.from_user.full_name, username=event.from_user.username, referrer_id=referrer_id)
+            print('REFERRER', referrer)
+            user = await set_user(user_id=event.from_user.id, fullname=event.from_user.full_name, username=event.from_user.username, referrer = referrer)
 
         data['user'] = user
 

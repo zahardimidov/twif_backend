@@ -31,3 +31,9 @@ class NFT(BaseModel):
 
 class NFTCollectionItems(BaseModel):
     items: List[NFT]
+
+class NFTCollectionGroups(BaseModel):
+    groups: Dict[str, List[NFT]]
+
+class NFTCollectionColors(BaseModel):
+    colors: List[str]

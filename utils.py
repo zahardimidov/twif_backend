@@ -11,6 +11,7 @@ async def path_exists(path: Union[Path, str]) -> bool:
     try:
         await aiofiles.os.stat(str(path))
     except OSError as e:
+        print(e)
         return False
     return True
 

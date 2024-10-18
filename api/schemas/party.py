@@ -1,5 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from api.schemas.users import InitDataRequest
+from typing import Optional
+
 
 
 class PartyCreate(InitDataRequest):
@@ -11,16 +13,11 @@ class PartyCreate(InitDataRequest):
     project_share: float = 0.2
     voters_share: float = 0.1
 
-class SquadCreate(InitDataRequest):
-    title: str = 'Republican Party'
-    quantity: int = 100
+    nft_requirement: Optional[str] = Field(None, description="NFT color [white, silver or black]")
+    twif_requirement: Optional[int] =  Field(None, description="Amount of twif")
 
+class SquadCreate(PartyCreate):
     founder_ids: list[int]
-
-    founder_share: float
-    members_share: float
-    project_share: float
-    voters_share: float
 
 class JoinPartyRequest(InitDataRequest):
     party_id: str

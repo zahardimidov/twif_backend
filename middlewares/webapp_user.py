@@ -12,12 +12,11 @@ from config import BOT_TOKEN, TEST_MODE, TEST_USER_ID, WEBHOOK_PATH
 from database.requests import get_user
 
 
-def validate_data(init_data):
+def validate_data(init_data: dict):
     try:
-        parsed_data = dict(parse_qsl(init_data['initData']))
-        hash_ = parsed_data.pop('hash')
+        hash_ = init_data.pop('hash')
         data_check_string = "\n".join(
-            f"{k}={v}" for k, v in sorted(parsed_data.items(), key=itemgetter(0))
+            f"{k}={v}" for k, v in sorted(init_data.items(), key=itemgetter(0))
         )
         secret_key = hmac.new(
             key=b"WebAppData", msg=BOT_TOKEN.encode(), digestmod=hashlib.sha256
@@ -26,7 +25,7 @@ def validate_data(init_data):
             key=secret_key, msg=data_check_string.encode(), digestmod=hashlib.sha256
         ).hexdigest()
         if calculated_hash == hash_:
-            return json.loads(parsed_data['user'])
+            return json.loads(init_data['user'])
     except:
         if TEST_MODE:
             return {'id': TEST_USER_ID}
@@ -39,7 +38,9 @@ def findInitData(data: dict):
             elif isinstance(v.initData, str):
                 s = v.initData
             
-            return json.loads(s)
+            del v.initData
+            
+            return dict(parse_qsl(s))
         except:pass
                 
 
@@ -56,6 +57,9 @@ def webapp_user_middleware(func):
 
         if user_data := validate_data(init_data):
             user = await get_user(user_id=user_data['id'])
+
+            if not user:
+                raise HTTPException(status_code=401, detail= 'User profile not found')
 
             webapp_request = WebAppRequest(
                 webapp_user=user, **request.__dict__)
