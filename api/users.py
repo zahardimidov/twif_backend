@@ -48,11 +48,11 @@ async def get_leaderboard_handler(
     return dict(leaders=leaders)
 
 
-@router.post('/me')
+@router.post('/me', response_model=UserResponse)
 @webapp_user_middleware
 async def me(request: WebAppRequest, initData: InitDataRequest):
     user = request.webapp_user
-    return Response(status_code=200) # JSONResponse(status_code=200, content=jsonable_encoder(user))
+    return UserResponse(id = user.id, username=user.username, fullname=user.fullname, avatar=user.avatar, points=user.points, stars=user.stars)
 
 @router.post('/ref', response_model=RefLinkResponse)
 @webapp_user_middleware
