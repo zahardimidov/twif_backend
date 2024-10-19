@@ -112,7 +112,7 @@ async def user_complete_task(request: WebAppRequest, task: UserCompleteTask):
 
     if not _task:
         completed_task = await complete_task(user_id=request.webapp_user.id, task_id=task.task_id)
-        await set_user(user_id=request.webapp_user.id, points = request.webapp_user.points + completed_task.reward)
+        await set_user(user_id=request.webapp_user.id, points = request.webapp_user.points + float(completed_task.reward))
 
     return Response(status_code=200)
 

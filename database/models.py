@@ -23,6 +23,7 @@ class MemberStatusEnum(enum.Enum):
     member = 'member'
     project = 'project'
     voter = 'voter'
+    invited = 'invited' 
 
 
 def generate_uuid():
@@ -41,7 +42,7 @@ class User(Base):
     fullname = mapped_column(String, nullable=True, default='Guest')
     avatar = mapped_column(String)
 
-    points = mapped_column(BigInteger, default=0)
+    points = mapped_column(Float, default=0)
     stars = mapped_column(Integer, default=0)
     last_attempt = mapped_column(DateTime, nullable=True)
 
@@ -75,6 +76,7 @@ class Party(Base):
     voters_share = mapped_column(Float)
 
     level = mapped_column(Integer, default=0)
+    chat_url = mapped_column(String, nullable=True)
 
     nft_requirement = mapped_column(String, nullable=True, default=None)
     twif_requirement = mapped_column(Integer, nullable=True, default=None)
@@ -91,7 +93,7 @@ class PartyMember(Base):
 
     party_id = mapped_column(ForeignKey(
         'parties.id', ondelete='CASCADE'), primary_key=True)
-    party: Mapped['Party'] = relationship()
+    party: Mapped['Party'] = relationship(lazy='subquery')
 
     member_id = mapped_column(ForeignKey(
         'users.id', ondelete='CASCADE'), primary_key=True)

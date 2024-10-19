@@ -16,7 +16,7 @@ router = APIRouter(prefix='/messages', tags=['Cообщения'])
 @router.get('/get', include_in_schema=False)
 async def get_message(pk: str):
     if not pk:
-        raise HTTPException('You need to provide pk')
+        raise HTTPException(status_code=400, detail='You need to provide pk')
 
     message = await get_message_by_id(message_id=pk)
 

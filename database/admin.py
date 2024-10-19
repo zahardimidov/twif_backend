@@ -112,7 +112,7 @@ class UserTasksCompletedAdmin(ModelView, model=UserTaskCompleted):
 
 
 class PartyAdmin(ModelView, model=Party):
-    column_list = [Party.logo, Party.title, Party.quantity,
+    column_list = [Party.logo, Party.title, Party.quantity, Party.chat_url,
                    Party.nft_requirement, Party.twif_requirement, Party.id]
 
     column_formatters = {Party.logo: lambda m, a: showLogo(model=m)}

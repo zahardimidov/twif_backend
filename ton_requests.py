@@ -114,10 +114,7 @@ async def getLastByBoc(address, boc):
 
     res = await getTransactions(address=address, limit=1, hash=hash_hex)
 
-    if res['ok']:
-        return res['result'][0]
-    return None
-
+    return 'ok' in res
 
 
 if __name__ == '__main__':

@@ -1,29 +1,34 @@
+from datetime import datetime, timezone
 from typing import List
 
-from sqlalchemy import desc, func, select, update, delete, or_
-
-from database.models import MemberStatusEnum, Party, PartyMember, User, Wallet, Transaction, StarsOffer, Message, UserDailyBoost, DailyBoost, UserTaskCompleted, Task
+from database.models import (DailyBoost, MemberStatusEnum, Message, Party,
+                             PartyMember, StarsOffer, Task, Transaction, User,
+                             UserDailyBoost, UserTaskCompleted, Wallet)
 from database.session import async_session
-from datetime import datetime, timezone
+from sqlalchemy import delete, desc, func, or_, select, update
+
 
 async def get_user(user_id) -> User:
     async with async_session() as session:
         user = await session.scalar(select(User).where(User.id == user_id))
 
         return user
-    
+
+
 async def get_users() -> List[User]:
     async with async_session() as session:
         users = await session.scalars(select(User))
 
         return users
-    
+
+
 async def get_users_ids() -> List[int]:
     async with async_session() as session:
         users = await session.scalars(select(User.id))
 
         return users
-    
+
+
 async def get_party(party_id) -> Party:
     async with async_session() as session:
         party = await session.scalar(select(Party).where(Party.id == party_id))
@@ -70,6 +75,7 @@ async def create_party(**party_data):
 
         return party
 
+
 async def update_party(party_id, data_dict):
     async with async_session() as session:
         await session.execute(update(Party).where(Party.id == party_id).values(**data_dict))
@@ -82,6 +88,12 @@ async def join_party(party_id, user_id, status=MemberStatusEnum.member):
             party_id=party_id, member_id=user_id, member_status=status)
         session.add(member)
 
+        await session.commit()
+
+
+async def delete_invite(user_id, party_id):
+    async with async_session() as session:
+        await session.execute(delete(PartyMember).where(PartyMember.member_id == user_id, PartyMember.party_id == party_id))
         await session.commit()
 
 
@@ -99,17 +111,24 @@ async def get_user_vote(user_id):
 
 async def get_user_party(user_id):
     async with async_session() as session:
-        party_id = await session.scalar(select(PartyMember.party_id).where(
-            PartyMember.member_id == user_id))
+        party = await session.scalar(select(PartyMember).where(
+            PartyMember.member_id == user_id, PartyMember.member_status != MemberStatusEnum.invited))
 
-        if party_id:
-            return party_id
+        return party
+
+
+async def get_user_invites(user_id):
+    async with async_session() as session:
+        invites = await session.scalars(select(PartyMember).where(
+            PartyMember.member_id == user_id, PartyMember.member_status == MemberStatusEnum.invited))
+
+        return invites
 
 
 async def get_party_member(party_id, user_id):
     async with async_session() as session:
         member: PartyMember = await session.scalar(select(PartyMember).where(PartyMember.member_id == user_id, Party.id == party_id, PartyMember.member_status.in_([
-                                             MemberStatusEnum.creator, MemberStatusEnum.founder, MemberStatusEnum.member])))
+            MemberStatusEnum.creator, MemberStatusEnum.founder, MemberStatusEnum.member])))
 
         if member:
             return member.member_status
@@ -138,72 +157,78 @@ async def get_top_parties(limit=10, offset=0):
 
         return leaders.scalars().all()
 
+
 async def get_user_wallet(user_id):
     async with async_session() as session:
         wallet = await session.scalar(select(Wallet).where(Wallet.user_id == user_id))
 
         return wallet
-    
+
 
 async def get_daily_boost(boost_id) -> DailyBoost:
     async with async_session() as session:
         boost = await session.scalar(select(DailyBoost).where(DailyBoost.id == boost_id))
 
         return boost
-    
+
+
 async def get_user_daily_boost(user_id):
     async with async_session() as session:
         boost = await session.scalar(select(UserDailyBoost).where(UserDailyBoost.user_id == user_id, UserDailyBoost.date == datetime.now(timezone.utc).date()))
 
         return boost
-    
+
+
 async def get_daily_boosts() -> List[DailyBoost]:
     async with async_session() as session:
         boosts = await session.scalars(select(DailyBoost))
 
         return list(boosts)
-    
+
+
 async def set_user_daily_boost(boost_id, user_id) -> UserDailyBoost:
     async with async_session() as session:
-        boost = UserDailyBoost(boost_id = boost_id, user_id = user_id)
+        boost = UserDailyBoost(boost_id=boost_id, user_id=user_id)
         session.add(boost)
         await session.commit()
         await session.refresh(boost)
 
         return boost
-    
+
 
 async def get_transaction(boc):
     async with async_session() as session:
         transaction = await session.scalar(select(Transaction).where(Transaction.boc == boc))
 
         return transaction
-    
+
 
 async def get_stars_offers():
     async with async_session() as session:
         offer = await session.scalars(select(StarsOffer).order_by(desc(StarsOffer.amount)))
 
         return offer
-    
+
+
 async def get_stars_offer(offer_id):
     async with async_session() as session:
         offer = await session.scalar(select(StarsOffer).where(StarsOffer.id == offer_id))
 
         return offer
-    
-    
+
+
 async def set_user_wallet(user_id, address):
     wallet = await get_user_wallet(user_id=user_id)
 
     async with async_session() as session:
         if wallet:
-            await session.execute(update(Wallet).where(Wallet.user_id == user_id).values(address = address))
+            await session.execute(update(Wallet).where(Wallet.user_id == user_id).values(address=address))
         else:
-            wallet = Wallet(user_id = user_id, address = address)
+            wallet = Wallet(user_id=user_id, address=address)
             session.add(wallet)
         await session.commit()
-    
+
+
 async def delete_user_wallet(user_id):
     async with async_session() as session:
         await session.execute(delete(Wallet).where(Wallet.user_id == user_id))
@@ -215,16 +240,18 @@ async def get_message_by_id(message_id):
         message = await session.scalar(select(Message).where(Message.id == message_id))
 
         return message
-    
+
+
 async def complete_task(user_id, task_id):
     async with async_session() as session:
-        complete = UserTaskCompleted(task_id = task_id, user_id = user_id)
+        complete = UserTaskCompleted(task_id=task_id, user_id=user_id)
 
         session.add(complete)
         await session.commit()
         await session.refresh(complete)
 
     return complete.task
+
 
 async def users_complete_tasks(user_id) -> List[UserTaskCompleted]:
     async with async_session() as session:
@@ -238,7 +265,8 @@ async def get_user_task(user_id, task_id) -> UserTaskCompleted:
         task = await session.scalar(select(UserTaskCompleted).where(UserTaskCompleted.user_id == user_id, UserTaskCompleted.task_id == task_id))
 
         return task
-    
+
+
 async def get_tasks() -> List[Task]:
     async with async_session() as session:
         tasks = await session.scalars(select(Task))

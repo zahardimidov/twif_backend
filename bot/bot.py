@@ -5,7 +5,7 @@ from aiogram.types import Update
 from fastapi import Request
 
 from middlewares import RegisterUserMiddleware
-from bot.routers import base_router
+from bot.routers import base_router, stars_router
 from config import BOT_TOKEN, WEBHOOK_HOST, WEBHOOK_PATH
 
 
@@ -13,7 +13,7 @@ async def run_bot_webhook():
     me = await bot.get_me()
     print(me.username)
 
-    await bot.set_webhook(f'{WEBHOOK_HOST}/{WEBHOOK_PATH}', drop_pending_updates=True)
+    await bot.set_webhook(f'{WEBHOOK_HOST}/{WEBHOOK_PATH}', drop_pending_updates=True, allowed_updates=["message", "edited_channel_post", "callback_query"])
 
 
 async def run_bot_polling():
@@ -27,7 +27,7 @@ bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(
     parse_mode=ParseMode.HTML))
 dp = Dispatcher()
 
-dp.include_router(base_router)
+dp.include_routers(base_router, stars_router)
 dp.message.middleware(RegisterUserMiddleware())
 
 

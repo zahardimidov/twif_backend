@@ -50,11 +50,11 @@ class UserResponse(BaseModel):
     fullname: str
     avatar: str
 
-    points: int
+    points: float
     stars: int
 
 class SaveGame(InitDataRequest):
-    points: int
+    points: float
 
 class SearchUsersResponse(BaseModel):
     users: list[UserResponse]
