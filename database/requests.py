@@ -1,6 +1,6 @@
 from typing import List
 
-from sqlalchemy import desc, func, select, update, delete
+from sqlalchemy import desc, func, select, update, delete, or_
 
 from database.models import MemberStatusEnum, Party, PartyMember, User, Wallet, Transaction, StarsOffer, Message, UserDailyBoost, DailyBoost, UserTaskCompleted, Task
 from database.session import async_session
@@ -33,7 +33,7 @@ async def get_party(party_id) -> Party:
 
 async def search_users(query) -> List[User]:
     async with async_session() as session:
-        users = await session.scalars(select(User).filter(User.username.like(f'%{query}%'), User.fullname.like(f'%{query}%')))
+        users = await session.scalars(select(User).filter(or_(User.username.ilike(f'%{query}%'), User.fullname.ilike(f'%{query}%'))))
 
     return list(users)
 
