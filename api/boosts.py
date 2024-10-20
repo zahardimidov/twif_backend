@@ -65,21 +65,33 @@ async def get_user_boosts_for_nft(request: WebAppRequest, initData: InitDataRequ
     return UserBoostsForNFT(boosts=result)
 
 
-@router.post('/topup_attempts', response_model=UserResponse)
+MINUTES = 10
+
+@router.post('/get_attempts')
 @webapp_user_middleware
-async def topup_attempts(request: WebAppRequest, initData: InitDataRequest):
-    if request.webapp_user.last_attempt is not None and request.webapp_user.last_attempt < datetime.now(timezone.utc) - timedelta(minutes=10):
-        #await set_user(user_id=request.webapp_user.id, last_attempt=datetime.now(timezone.utc))
-        return Response(status_code=200)
+async def get_attempts(request: WebAppRequest, initData: InitDataRequest):
+    if request.webapp_user.attempts < 6:
+        dif = datetime.now(timezone.utc) - request.webapp_user.last_attempt
+        dif: timedelta
+        new_attempts = min(request.webapp_user.attempts + dif.seconds // (60 * MINUTES), 6)
+
+        if new_attempts != request.webapp_user.attempts:
+            la = datetime.now(timezone.utc) if request.webapp_user.last_attempt is None else request.webapp_user.last_attempt + timedelta(minutes=MINUTES)
+            await set_user(user_id=request.webapp_user.id, attempts = new_attempts, last_attempt=la)
+
+        return JSONResponse(status_code=200, content=jsonable_encoder({
+            'attempts': new_attempts
+        }))
     
-    raise HTTPException(
-        status_code=400, detail='You should wait 10 minutes after receiving every attempt')
+    return JSONResponse(status_code=200, content=jsonable_encoder({'attempts': 6}))
 
 
 @router.post('/save_game')
 @webapp_user_middleware
 async def save_game(request: WebAppRequest, game: SaveGame):
-    #await set_user(user_id=request.webapp_user.id, last_attempt=datetime.now(timezone.utc), points=request.webapp_user.points + game.points)
-    await set_user(user_id=request.webapp_user.id, points=request.webapp_user.points + game.points)
+    if request.webapp_user.attempts == 6:
+        await set_user(user_id=request.webapp_user.id, last_attempt=datetime.now(timezone.utc))
+
+    await set_user(user_id=request.webapp_user.id, attempts = request.webapp_user.attempts - 1, points=request.webapp_user.points + game.points)
 
     return Response(status_code=200)

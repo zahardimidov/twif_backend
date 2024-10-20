@@ -34,7 +34,6 @@ class PartyResponse(BaseModel):
     id: str
 
     title: str
-    quantity: int
     logo: str
 
     chat_url: Optional[str] = Field(None, description="Telegram Chat URL")

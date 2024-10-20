@@ -5,7 +5,7 @@ from config import BOT_TOKEN
 from database.requests import (complete_task, delete_user_wallet, set_user,
                                get_leaderboard, get_user_task, get_user_wallet,
                                get_users_ids, search_users, set_user, get_tasks,
-                               set_user_wallet, users_complete_tasks)
+                               set_user_wallet, users_complete_tasks, get_user_vote)
 from fastapi import APIRouter, HTTPException, Query, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
@@ -52,6 +52,10 @@ async def get_leaderboard_handler(
 @webapp_user_middleware
 async def me(request: WebAppRequest, initData: InitDataRequest):
     user = request.webapp_user
+
+    vote = await get_user_vote(user_id=user.id)
+    if vote:
+        return UserResponse(id = user.id, username=user.username, fullname=user.fullname, avatar=user.avatar, points=0, stars=user.stars)
     return UserResponse(id = user.id, username=user.username, fullname=user.fullname, avatar=user.avatar, points=user.points, stars=user.stars)
 
 @router.post('/ref', response_model=RefLinkResponse)
@@ -108,11 +112,11 @@ async def get_all_tasks():
 @tasks_router.post('/complete')
 @webapp_user_middleware
 async def user_complete_task(request: WebAppRequest, task: UserCompleteTask):
-    _task = await get_user_task(user_id=request.webapp_user.id, task_id=task.task_id)
+    completed_task = await get_user_task(user_id=request.webapp_user.id, task_id=task.task_id)
 
-    if not _task:
+    if not completed_task:
         completed_task = await complete_task(user_id=request.webapp_user.id, task_id=task.task_id)
-        await set_user(user_id=request.webapp_user.id, points = request.webapp_user.points + float(completed_task.reward))
+        await set_user(user_id=request.webapp_user.id, points = request.webapp_user.points + completed_task.reward)
 
     return Response(status_code=200)
 

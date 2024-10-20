@@ -1,11 +1,11 @@
 from datetime import datetime, timezone
-from typing import List
+from typing import List, Tuple
 
 from database.models import (DailyBoost, MemberStatusEnum, Message, Party,
                              PartyMember, StarsOffer, Task, Transaction, User,
                              UserDailyBoost, UserTaskCompleted, Wallet)
 from database.session import async_session
-from sqlalchemy import delete, desc, func, or_, select, update
+from sqlalchemy import delete, desc, func, or_, select, update, and_
 
 
 async def get_user(user_id) -> User:
@@ -34,6 +34,49 @@ async def get_party(party_id) -> Party:
         party = await session.scalar(select(Party).where(Party.id == party_id))
 
         return party
+
+
+async def get_party_related_users(party_id, voter = True) -> List[User]:
+    async with async_session() as session:
+        status = [MemberStatusEnum.creator, MemberStatusEnum.founder, MemberStatusEnum.member]
+
+        if voter:
+            status.append(MemberStatusEnum.voter)
+
+        participants = await session.scalars(select(User).join(PartyMember).filter(PartyMember.party_id == party_id, PartyMember.member_status.in_(status)))
+
+        return list(participants)
+
+
+async def get_party_points(party_id) -> List[User]:
+    participants = await get_party_related_users(party_id=party_id)
+
+    async with async_session() as session:
+        status = [MemberStatusEnum.creator, MemberStatusEnum.founder,
+                  MemberStatusEnum.member, MemberStatusEnum.voter]
+        participants = await session.scalars(select(User).join(PartyMember).filter(PartyMember.party_id == party_id, PartyMember.member_status.in_(status)))
+
+        return list(participants)
+
+
+async def get_party_leaderboard() -> List[Tuple[Party, int]]:
+    async with async_session() as session:
+        status = [MemberStatusEnum.creator, MemberStatusEnum.founder,
+                  MemberStatusEnum.member, MemberStatusEnum.voter]
+        
+        result = await session.execute(
+            select(
+                Party,
+                func.sum(User.points).label('total_points')
+            )
+            .join(PartyMember, and_(Party.id == PartyMember.party_id, PartyMember.member_status.in_(status)))
+            .join(User, PartyMember.member_id == User.id)
+            .group_by(Party.id)
+            .order_by(func.sum(User.points).desc())
+        )
+
+        leaderboard = result.all()  # Получаем все результаты
+    return [(party,  total_points) for party, total_points in leaderboard]
 
 
 async def search_users(query) -> List[User]:

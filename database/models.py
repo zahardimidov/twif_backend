@@ -4,7 +4,7 @@ import uuid
 from config import BASE_DIR, AVATARS_DIR
 from fastapi_storages import FileSystemStorage
 from fastapi_storages.integrations.sqlalchemy import FileType
-from sqlalchemy import BigInteger, Enum, ForeignKey, Integer, String, Float, DateTime, Boolean, Date
+from sqlalchemy import BigInteger, Enum, ForeignKey, Integer, String, Float, DateTime, Boolean, Date, TIMESTAMP
 from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from datetime import datetime, timezone
@@ -33,7 +33,6 @@ def generate_uuid():
 class Base(AsyncAttrs, DeclarativeBase):
     pass
 
-
 class User(Base):
     __tablename__ = 'users'
 
@@ -42,9 +41,11 @@ class User(Base):
     fullname = mapped_column(String, nullable=True, default='Guest')
     avatar = mapped_column(String)
 
-    points = mapped_column(Float, default=0)
+    points = mapped_column(Integer, default=0)
     stars = mapped_column(Integer, default=0)
-    last_attempt = mapped_column(DateTime, nullable=True)
+
+    attempts = mapped_column(Integer, default=6)
+    last_attempt = mapped_column(DateTime(timezone=True), nullable=True)
 
     referrer_id = mapped_column(ForeignKey('users.id'), nullable=True)
     referrer: Mapped['User'] = relationship()

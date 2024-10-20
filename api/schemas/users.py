@@ -6,9 +6,9 @@ from datetime import datetime, timedelta, timezone
 
 
 class CreateUser(BaseModel):
-    id: int
-    username: str
-    fullname: str
+    id: int = 7485502073
+    username: str = 'TestUser'
+    fullname: str = 'TestUser'
 
 class InitDataRequest(BaseModel):
     initData: str = '{}'
@@ -18,7 +18,7 @@ class LeaderboardRequest(BaseModel):
     offset: Optional[str] = Field(Query(...))
 
 class ConnectWalletRequest(InitDataRequest):
-    address: str
+    address: str = 'EQA0OW2trwp66mB6KxZygH_rTY65jbvNv0580py5WOkXwfVu'
 
 class SetUserDailyBoost(InitDataRequest):
     boost_id: str
@@ -50,11 +50,11 @@ class UserResponse(BaseModel):
     fullname: str
     avatar: str
 
-    points: float
+    points: int
     stars: int
 
 class SaveGame(InitDataRequest):
-    points: float
+    points: int
 
 class SearchUsersResponse(BaseModel):
     users: list[UserResponse]

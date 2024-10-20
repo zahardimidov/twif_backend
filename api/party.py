@@ -5,7 +5,7 @@ from api.schemas import *
 from database.models import MemberStatusEnum, Party
 from database.requests import (create_party, get_party, get_user,
                                get_user_invites, get_user_party, get_user_vote, delete_invite,
-                               get_user_wallet, join_party, set_user)
+                               get_user_wallet, join_party, set_user, get_party_leaderboard, get_party_related_users)
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, Response
@@ -74,6 +74,14 @@ async def get_party_by_id(
     return JSONResponse(status_code=200, content=jsonable_encoder(res))
 
 
+@router.get('/leaderboard')
+async def party_leaderboard():
+    leaderboard = await get_party_leaderboard()
+
+    return JSONResponse(status_code=200, content=jsonable_encoder([
+        dict(id = party.id, title = party.title, logo = party.logo, points = points) for party, points in leaderboard
+    ]))
+
 @router.post('/create', response_model=PartyResponse)
 @webapp_user_middleware
 @without_party
@@ -127,12 +135,22 @@ async def create_squad_handler(request: WebAppRequest, party: SquadCreate = Depe
     return JSONResponse(status_code=201, content=jsonable_encoder(data))
 
 
+async def check_party_members_count(party: Party | str):
+    if isinstance(party, str):
+        party: Party = await get_party(party_id=party)
+
+    members = await get_party_related_users(voter=False)
+    if len(members) >= party.quantity:
+        raise HTTPException(status_code=400, detail='The limit of users in the party is exceeded')
+
 @router.post('/join')
 @webapp_user_middleware
 @without_party
 async def join_party_handler(request: WebAppRequest, party: JoinPartyRequest):
     party: Party = await get_party(party_id=party.party_id)
     await check_party_requirements(user_id=request.webapp_user.id, twif=party.twif_requirement, nft=party.nft_requirement)
+    await check_party_members_count(party=party)
+
     await join_party(party_id=party.id, user_id=request.webapp_user.id)
 
     return JSONResponse(status_code=200, content=jsonable_encoder({
@@ -148,6 +166,10 @@ async def join_squad_as_founder(request: WebAppRequest, party: JoinPartyRequest)
 
     for invite in invites:
         if party.party_id == invite.party_id:
+            party: Party = await get_party(party_id=party.party_id)
+            await check_party_requirements(user_id=request.webapp_user.id, twif=party.twif_requirement, nft=party.nft_requirement)
+            await check_party_members_count(party=party)
+
             await delete_invite(user_id=request.webapp_user.id, party_id=party.party_id)
             await join_party(party_id=party.party_id, user_id=request.webapp_user.id, status=MemberStatusEnum.founder)
 
@@ -165,7 +187,6 @@ async def get_all_invites(request: WebAppRequest, initData: InitDataRequest):
     return PartyInvites(invites=[dict(
         id = i.party.id,
         title=i.party.title,
-        quantity=i.party.quantity,
         logo=i.party.logo,
         chat_url=i.party.chat_url,
         level=i.party.level
@@ -177,6 +198,6 @@ async def get_all_invites(request: WebAppRequest, initData: InitDataRequest):
 @without_party
 async def vote_party_handler(request: WebAppRequest, party: VotePartyRequest):
     await join_party(party_id=party.party_id, user_id=request.webapp_user.id)
-    await set_user(points=0)
+    #await set_user(points=0)
 
     return Response(status_code=200)
