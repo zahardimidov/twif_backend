@@ -14,8 +14,8 @@ from database.requests import get_user
 
 def validate_data(init_data: dict):
     try:
-        print(init_data)
         hash_ = init_data.pop('hash')
+        print(f'{hash_=}')
         data_check_string = "\n".join(
             f"{k}={v}" for k, v in sorted(init_data.items(), key=itemgetter(0))
         )
@@ -51,13 +51,15 @@ def webapp_user_middleware(func):
         if str(request.url).endswith(WEBHOOK_PATH) or request.method == 'GET':
             return await func(request, *args, **kwargs)
         
+        print(f'{kwargs=}')
         init_data = findInitData(kwargs)
+        print(f'{init_data=}')
 
         if init_data is None:
             raise HTTPException(status_code=400, detail='Provide correct initData')
         
         user_data = validate_data(init_data)
-        print(user_data)
+        print(f'{user_data=}')
         if user_data:
             user = await get_user(user_id=user_data['id'])
 

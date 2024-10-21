@@ -33,7 +33,7 @@ async def donate(callback: CallbackQuery):
 
     await callback.message.answer_invoice(
         title='Support and donate',
-        description='Promoting the project through TelegramStarse',
+        description='Promoting the project through TelegramStars',
         prices=prices,
         provider_token="",
         payload="donate",

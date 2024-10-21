@@ -12,7 +12,7 @@ TEST_USER_ID = 7485502073
 
 WEBAPP_URL = os.environ.get('WEBAPP_URL', 'https://192.168.0.8:5173')
 BOT_TOKEN = os.environ.get('BOT_TOKEN', '7396897324:AAHzNa_ncI4sf0hkg8M0txRt9KWZSnXFqC0')
-WEBHOOK_HOST = os.environ.get('WEBHOOK_HOST', 'https://1278-178-47-140-82.ngrok-free.app')
+WEBHOOK_HOST = os.environ.get('WEBHOOK_HOST', 'https://d33d-178-47-140-82.ngrok-free.app')
 WEBHOOK_PATH = 'webhook'
 #ENGINE = "sqlite+aiosqlite:///./database/database.db"
 ADMIN_USERNAME = 'admin'
