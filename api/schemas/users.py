@@ -11,7 +11,7 @@ class CreateUser(BaseModel):
     fullname: str = 'TestUser'
 
 class InitDataRequest(BaseModel):
-    initData: str = '{}'
+    initData: str
 
 class LeaderboardRequest(BaseModel):
     limit: Optional[int] = Field(Query(...))
