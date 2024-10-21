@@ -54,6 +54,10 @@ def webapp_user_middleware(func):
         if str(request.url).endswith(WEBHOOK_PATH) or request.method == 'GET':
             return await func(request, *args, **kwargs)
         
+        print(request)
+        try: print((await request.json()))
+        except:pass
+        
         init_data = findInitData(kwargs)
 
         if init_data is None:
