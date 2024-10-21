@@ -10,7 +10,7 @@ AVATARS_DIR = BASE_DIR.joinpath('/media/avatars/')
 TEST_MODE = True
 TEST_USER_ID = 7485502073
 
-PORT = 4550
+PORT = 5000
 WEBAPP_URL = os.environ.get('WEBAPP_URL', 'https://twif8-feb8a.web.app')
 BOT_TOKEN = os.environ.get('BOT_TOKEN', '7396897324:AAHzNa_ncI4sf0hkg8M0txRt9KWZSnXFqC0')
 WEBHOOK_HOST = os.environ.get('WEBHOOK_HOST', 'https://playcloud.pro')
