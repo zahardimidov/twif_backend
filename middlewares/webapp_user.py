@@ -14,6 +14,7 @@ from database.requests import get_user
 
 def validate_data(init_data: dict):
     try:
+        print(init_data)
         hash_ = init_data.pop('hash')
         data_check_string = "\n".join(
             f"{k}={v}" for k, v in sorted(init_data.items(), key=itemgetter(0))
@@ -53,13 +54,15 @@ def webapp_user_middleware(func):
         init_data = findInitData(kwargs)
 
         if init_data is None:
-            raise HTTPException(status_code=401, detail='Provide correct initData')
-
-        if user_data := validate_data(init_data):
+            raise HTTPException(status_code=400, detail='Provide correct initData')
+        
+        user_data = validate_data(init_data)
+        print(user_data)
+        if user_data:
             user = await get_user(user_id=user_data['id'])
 
             if not user:
-                raise HTTPException(status_code=401, detail= 'User profile not found')
+                raise HTTPException(status_code=404, detail= 'User profile not found')
 
             webapp_request = WebAppRequest(
                 webapp_user=user, **request.__dict__)

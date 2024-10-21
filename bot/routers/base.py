@@ -1,7 +1,7 @@
 from aiogram import Router, F
 from aiogram.filters import CommandStart
-from aiogram.types import InlineKeyboardButton, Message, WebAppInfo, KeyboardButton
-from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
+from aiogram.types import InlineKeyboardButton, Message, WebAppInfo, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from config import WEBAPP_URL
 
@@ -18,8 +18,9 @@ async def start(message: Message):
         InlineKeyboardButton(text='Open 👀', web_app=WebAppInfo(url=WEBAPP_URL))
     )
 
-    reply = ReplyKeyboardBuilder()
-    reply.row(KeyboardButton(text=DONATE))
+    reply = ReplyKeyboardMarkup(keyboard=[[
+        KeyboardButton(text=DONATE)
+    ]], resize_keyboard=True)
 
-    await message.answer('👋', reply_markup=reply.as_markup())
+    await message.answer('👋', reply_markup=reply)
     await message.answer('🤖 Hello from telegram bot\nYou can test mini app by clicking the button', reply_markup=builder.as_markup())
