@@ -1,7 +1,7 @@
 from api import (boosts_router, nft_router, party_router, router, schemas,
                  transaction_router, users_router, tasks_router)
 from bot import process_update, run_bot_webhook
-from config import BASE_DIR, WEBHOOK_PATH
+from config import BASE_DIR, WEBHOOK_PATH, PORT
 from database.admin import init_admin
 from database.session import engine, run_database
 from fastapi import FastAPI, Request, Response
@@ -50,4 +50,4 @@ async def home(request: schemas.WebAppRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=4550, forwarded_allow_ips='*')
+    uvicorn.run(app, host="0.0.0.0", port=PORT, forwarded_allow_ips='*')

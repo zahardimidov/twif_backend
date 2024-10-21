@@ -32,6 +32,8 @@ def validate_data(init_data: dict):
             return {'id': TEST_USER_ID}
 
 def findInitData(data: dict):
+    print(f'kwargs={data}')
+
     for k, v in data.items():
         try:
             if isinstance(v.initData, bytes):
@@ -41,6 +43,7 @@ def findInitData(data: dict):
             
             del v.initData
             
+            print(f'{s=}', f'\n{parse_qsl(s)=}', f'\ninitData={dict(parse_qsl(s))}')
             return dict(parse_qsl(s))
         except:pass
                 
@@ -51,9 +54,7 @@ def webapp_user_middleware(func):
         if str(request.url).endswith(WEBHOOK_PATH) or request.method == 'GET':
             return await func(request, *args, **kwargs)
         
-        print(f'{kwargs=}')
         init_data = findInitData(kwargs)
-        print(f'{init_data=}')
 
         if init_data is None:
             raise HTTPException(status_code=400, detail='Provide correct initData')
