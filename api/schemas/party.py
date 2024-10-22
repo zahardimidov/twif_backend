@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 from api.schemas.users import InitDataRequest
 from typing import Optional, List
+from config import WEBHOOK_HOST
 
 
 
@@ -39,6 +40,28 @@ class PartyResponse(BaseModel):
     chat_url: Optional[str] = Field(None, description="Telegram Chat URL")
     level: int
 
+    @computed_field
+    def logoURL(self) -> str:
+        return WEBHOOK_HOST + f"/media/avatars/{self.logo.split('/')[-1]}"
+
+
+class PartyLeaderResponse(BaseModel):
+    id: str
+
+    title: str
+    logoURL: str
+    
+    points: int
+    quantity: int
+
+class PartyInviteResponse(BaseModel):
+    id: str
+
+    title: str
+    logoURL: str
+
+class PartyLeaderboardResponse(BaseModel):
+    leaders: list[PartyLeaderResponse]
 
 class PartyInvites(BaseModel):
-    invites: List[PartyResponse]
+    invites: List[PartyInviteResponse]

@@ -59,7 +59,7 @@ async def get_party_points(party_id) -> List[User]:
         return list(participants)
 
 
-async def get_party_leaderboard() -> List[Tuple[Party, int]]:
+async def get_party_leaderboard(limit = 10) -> List[Tuple[Party, int]]:
     async with async_session() as session:
         status = [MemberStatusEnum.creator, MemberStatusEnum.founder,
                   MemberStatusEnum.member, MemberStatusEnum.voter]
@@ -73,6 +73,7 @@ async def get_party_leaderboard() -> List[Tuple[Party, int]]:
             .join(User, PartyMember.member_id == User.id)
             .group_by(Party.id)
             .order_by(func.sum(User.points).desc())
+            .limit(limit)
         )
 
         leaderboard = result.all()  # Получаем все результаты

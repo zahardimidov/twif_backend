@@ -66,23 +66,33 @@ def without_party(func):
     return wrapper
 
 
-@router.get('/get')
+@router.get('/get', response_model=PartyResponse, response_model_exclude={"logo"})
 async def get_party_by_id(
     party_id: str = Query(...),
 ):
     res = await get_party(party_id=party_id)
-    return JSONResponse(status_code=200, content=jsonable_encoder(res))
+    if not res:
+        raise HTTPException(status_code=404, detail='Party not found')
+    return res
 
 
-@router.get('/leaderboard')
-async def party_leaderboard():
-    leaderboard = await get_party_leaderboard()
+@router.get('/leaderboard', response_model=PartyLeaderboardResponse)
+async def party_leaderboard(
+    limit: int = Query(...),
+):
+    leaderboard =  await get_party_leaderboard(limit)
+    leaders = [PartyResponse(id = p.id, title=p.title, logo=p.logo, chat_url=p.chat_url, level=p.level) for p, _ in leaderboard]
 
-    return JSONResponse(status_code=200, content=jsonable_encoder([
-        dict(id = party.id, title = party.title, logo = party.logo, points = points) for party, points in leaderboard
-    ]))
+    response = []
+    for ind, l in enumerate(leaders):
+        quantity = await get_party_related_users(party_id=l.id, voter=False)
+        response.append(PartyLeaderResponse(**l.__dict__, points=leaderboard[ind][1], quantity=len(quantity), logoURL=l.logoURL))
 
-@router.post('/create', response_model=PartyResponse)
+    print(response)
+
+    return dict(leaders = response)
+
+@router.post('/create', response_model=PartyResponse, response_model_exclude={"logo"})
 @webapp_user_middleware
 @without_party
 async def create_party_handler(request: WebAppRequest, party: PartyCreate = Depends(), logo: UploadFile = File(...)):
@@ -95,12 +105,10 @@ async def create_party_handler(request: WebAppRequest, party: PartyCreate = Depe
     new_party: Party = await create_party(logo=logo, **data)
     await join_party(party_id=new_party.id, user_id=request.webapp_user.id, status=MemberStatusEnum.creator)
 
-    data.update(id = new_party.id)
-
-    return JSONResponse(status_code=201, content=jsonable_encoder(data))
+    return await get_party(party_id=new_party.id)
 
 
-@router.post('/squad/create', response_model=PartyResponse)
+@router.post('/squad/create', response_model=PartyResponse, response_model_exclude={"logo"})
 @webapp_user_middleware
 @without_party
 async def create_squad_handler(request: WebAppRequest, party: SquadCreate = Depends(), logo: UploadFile = File(...)):
@@ -130,9 +138,7 @@ async def create_squad_handler(request: WebAppRequest, party: SquadCreate = Depe
     for user_id in party.founder_ids:
         await join_party(party_id=new_party.id, user_id=user_id, status=MemberStatusEnum.invited)
 
-    data.update(id = new_party.id)
-
-    return JSONResponse(status_code=201, content=jsonable_encoder(data))
+    return await get_party(party_id=new_party.id)
 
 
 async def check_party_members_count(party: Party | str):
@@ -183,14 +189,9 @@ async def join_squad_as_founder(request: WebAppRequest, party: JoinPartyRequest)
 @webapp_user_middleware
 async def get_all_invites(request: WebAppRequest, initData: InitDataRequest):
     invites = await get_user_invites(user_id=request.webapp_user.id)
+    parties = [PartyResponse(id = i.party.id, title=i.party.title, logo=i.party.logo, chat_url=i.party.chat_url, level=i.party.level) for i in invites]
 
-    return PartyInvites(invites=[dict(
-        id = i.party.id,
-        title=i.party.title,
-        logo=i.party.logo,
-        chat_url=i.party.chat_url,
-        level=i.party.level
-    ) for i in invites])
+    return dict(invites = [PartyInviteResponse(**p.__dict__, logoURL=p.logoURL) for p in parties])
 
 
 @router.post('/vote')
