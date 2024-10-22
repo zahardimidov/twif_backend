@@ -42,7 +42,7 @@ class PartyResponse(BaseModel):
 
     @computed_field
     def logoURL(self) -> str:
-        return WEBHOOK_HOST + f"/media/avatars/{self.logo.split('/')[-1]}"
+        return WEBHOOK_HOST + f"/media/logos/{self.logo.split('/')[-1]}"
 
 
 class PartyLeaderResponse(BaseModel):
