@@ -316,3 +316,29 @@ async def get_tasks() -> List[Task]:
         tasks = await session.scalars(select(Task))
 
         return list(tasks)
+
+
+async def get_referres(user: User) -> List[User]:
+    async with async_session() as session:
+        referrer1 = await session.scalar(select(User).where(User.id == user.referrer_id))
+
+        if not referrer1:
+            return []
+        
+        referrer2 = await session.scalar(select(User).where(User.id == referrer1.referrer_id))
+
+        if not referrer2:
+            return [referrer1]
+        
+        referrer3 = await session.scalar(select(User).where(User.id == referrer2.referrer_id))
+
+        if not referrer3:
+            return [referrer1, referrer2]
+        return [referrer1, referrer2, referrer3]
+    
+async def get_all_referals(user: User):
+    async with async_session() as session:
+        referrals = await session.scalars(select(User).where(User.referrer_id == user.id))
+        
+        return referrals
+        

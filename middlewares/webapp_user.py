@@ -15,7 +15,7 @@ from database.requests import get_user
 def validate_data(init_data: dict):
     try:
         hash_ = init_data.pop('hash')
-        print(f'{hash_=}')
+        #print(f'{hash_=}')
         data_check_string = "\n".join(
             f"{k}={v}" for k, v in sorted(init_data.items(), key=itemgetter(0))
         )
@@ -32,7 +32,7 @@ def validate_data(init_data: dict):
             return {'id': TEST_USER_ID}
 
 def findInitData(data: dict):
-    print(f'kwargs={data}')
+    #print(f'kwargs={data}')
 
     for k, v in data.items():
         try:
@@ -43,7 +43,7 @@ def findInitData(data: dict):
             
             del v.initData
             
-            print(f'{s=}', f'\n{parse_qsl(s)=}', f'\ninitData={dict(parse_qsl(s))}')
+            #print(f'{s=}', f'\n{parse_qsl(s)=}', f'\ninitData={dict(parse_qsl(s))}')
             return dict(parse_qsl(s))
         except:pass
                 
@@ -60,7 +60,7 @@ def webapp_user_middleware(func):
             raise HTTPException(status_code=400, detail='Provide correct initData')
         
         user_data = validate_data(init_data)
-        print(f'{user_data=}')
+        #print(f'{user_data=}')
         if user_data:
             user = await get_user(user_id=user_data['id'])
 

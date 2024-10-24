@@ -4,7 +4,7 @@ import uuid
 from config import BASE_DIR, AVATARS_DIR
 from fastapi_storages import FileSystemStorage
 from fastapi_storages.integrations.sqlalchemy import FileType
-from sqlalchemy import BigInteger, Enum, ForeignKey, Integer, String, Float, DateTime, Boolean, Date, TIMESTAMP
+from sqlalchemy import BigInteger, Enum, ForeignKey, Integer, String, Float, DateTime, Boolean, Date, func
 from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from datetime import datetime, timezone
@@ -220,3 +220,22 @@ class UserTaskCompleted(Base):
 
     def __repr__(self) -> str:
         return f'{self.user} - {self.task}'
+    
+
+'''
+class Game(Base):
+    __tablename__ = 'games'
+
+    id = mapped_column(String, primary_key=True, default=generate_uuid)
+
+    user_id = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
+    user: Mapped['User'] = relationship()
+
+    points = mapped_column(Integer)
+    time = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    referrer1_bonus = mapped_column(Integer, default = None)
+    referrer2_bonus = mapped_column(Integer, default = None)
+    referrer3_bonus = mapped_column(Integer, default = None)
+
+'''

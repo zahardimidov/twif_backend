@@ -1,10 +1,9 @@
 from aiogram import Bot
-from aiogram.utils.deep_linking import create_start_link
 from api.schemas import *
 from config import BOT_TOKEN
 from database.requests import (get_daily_boost, get_daily_boosts,
                                get_user_daily_boost, get_user_wallet, set_user,
-                               set_user_daily_boost)
+                               set_user_daily_boost, get_referres)
 from fastapi import APIRouter, HTTPException, Query, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
@@ -93,5 +92,10 @@ async def save_game(request: WebAppRequest, game: SaveGame):
         await set_user(user_id=request.webapp_user.id, last_attempt=datetime.now(timezone.utc))
 
     await set_user(user_id=request.webapp_user.id, attempts = request.webapp_user.attempts - 1, points=request.webapp_user.points + game.points)
+
+    referres = await get_referres(user=request.webapp_user)
+    for i in range(len(referres)):
+        bonus = int(game.points / 100 * (3-i))
+        await set_user(user_id=referres[i], points=referres[i].points + bonus)
 
     return Response(status_code=200)
