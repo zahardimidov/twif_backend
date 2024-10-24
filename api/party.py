@@ -95,7 +95,10 @@ async def get_party_by_id(
         response.append(dict(
             party_id = member.party_id,
             user_id = member.member_id,
-            status = member.member_status
+            status = member.member_status,
+            username = member.member.username,
+            fullname = member.member.fullname,
+            avatar = member.member.avatarURL
         ))
 
     return JSONResponse(status_code=200, content=jsonable_encoder(response))

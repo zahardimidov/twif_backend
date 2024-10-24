@@ -222,21 +222,25 @@ class UserTaskCompleted(Base):
     def __repr__(self) -> str:
         return f'{self.user} - {self.task}'
     
-
 '''
-class Game(Base):
-    __tablename__ = 'games'
+class RefBoost(Base):
+    __tablename__ = 'ref_boosts'
 
     id = mapped_column(String, primary_key=True, default=generate_uuid)
 
     user_id = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
     user: Mapped['User'] = relationship()
 
+    referral_id = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
+    referral: Mapped['User'] = relationship()
+
     points = mapped_column(Integer)
     time = mapped_column(DateTime(timezone=True), server_default=func.now())
-
-    referrer1_bonus = mapped_column(Integer, default = None)
-    referrer2_bonus = mapped_column(Integer, default = None)
-    referrer3_bonus = mapped_column(Integer, default = None)
-
 '''
+
+class Season(Base):
+    __tablename__ = 'seasons'
+
+    title = mapped_column(String, primary_key=True)
+    deadline = mapped_column(DateTime(timezone=True))
+    is_active = mapped_column(Boolean, default=True)

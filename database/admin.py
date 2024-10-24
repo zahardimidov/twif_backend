@@ -4,7 +4,7 @@ import os
 import redis
 from config import ADMIN_PASSWORD, ADMIN_USERNAME
 from database.models import (Button, Message, Party, PartyMember, StarsOffer, DailyBoost,
-                             Transaction, User, Wallet, UserDailyBoost, Task, UserTaskCompleted)
+                             Transaction, User, Wallet, Season, UserDailyBoost, Task, UserTaskCompleted)
 from database.requests import get_users
 from dotenv import load_dotenv
 from fastapi import Request
@@ -234,6 +234,15 @@ def showPhoto(model):
     return Markup(f'<img style="height: 40px" src="/media/message/{filename}"/>')
 
 
+class SeasonAdmin(ModelView, model=Season):
+    column_list = [Season.title, Season.deadline, Season.is_active]
+
+    can_create = False
+    can_edit = True
+
+    name = 'Сезон'
+    name_plural = 'Сезоны'
+
 def init_admin(app, engine):
     admin = Admin(app, engine=engine,
                   authentication_backend=authentication_backend)
@@ -252,3 +261,5 @@ def init_admin(app, engine):
 
     admin.add_view(MessageAdmin)
     admin.add_view(ButtonAdmin)
+
+    #admin.add_view(SeasonAdmin)
