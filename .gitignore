@@ -5,7 +5,9 @@ venv/
 test.py
 .env/
 
-*.json
+data*.json
+*nft*.json
+saling.json
 *.png
 test.html
 test.js
