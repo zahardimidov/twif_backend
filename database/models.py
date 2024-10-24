@@ -42,6 +42,7 @@ class User(Base):
     avatar = mapped_column(String)
 
     points = mapped_column(Integer, default=0)
+    voted_points = mapped_column(Integer, nullable=True, default=None)
     stars = mapped_column(Integer, default=0)
 
     attempts = mapped_column(Integer, default=6)
@@ -98,7 +99,7 @@ class PartyMember(Base):
 
     member_id = mapped_column(ForeignKey(
         'users.id', ondelete='CASCADE'), primary_key=True)
-    member: Mapped['User'] = relationship()
+    member: Mapped['User'] = relationship(lazy='subquery')
 
     member_status = mapped_column(Enum(MemberStatusEnum))
 

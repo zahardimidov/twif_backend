@@ -5,7 +5,7 @@ from database.models import (DailyBoost, MemberStatusEnum, Message, Party,
                              PartyMember, StarsOffer, Task, Transaction, User,
                              UserDailyBoost, UserTaskCompleted, Wallet)
 from database.session import async_session
-from sqlalchemy import delete, desc, func, or_, select, update, and_
+from sqlalchemy import delete, desc, func, or_, select, update, and_, case
 
 
 async def get_user(user_id) -> User:
@@ -36,9 +36,10 @@ async def get_party(party_id) -> Party:
         return party
 
 
-async def get_party_related_users(party_id, voter = True) -> List[User]:
+async def get_party_related_users(party_id, voter=True) -> List[User]:
     async with async_session() as session:
-        status = [MemberStatusEnum.creator, MemberStatusEnum.founder, MemberStatusEnum.member]
+        status = [MemberStatusEnum.creator,
+                  MemberStatusEnum.founder, MemberStatusEnum.member]
 
         if voter:
             status.append(MemberStatusEnum.voter)
@@ -49,22 +50,45 @@ async def get_party_related_users(party_id, voter = True) -> List[User]:
 
 
 async def get_party_points(party_id) -> List[User]:
-    participants = await get_party_related_users(party_id=party_id)
-
     async with async_session() as session:
         status = [MemberStatusEnum.creator, MemberStatusEnum.founder,
                   MemberStatusEnum.member, MemberStatusEnum.voter]
-        participants = await session.scalars(select(User).join(PartyMember).filter(PartyMember.party_id == party_id, PartyMember.member_status.in_(status)))
 
-        return list(participants)
-
-
-async def get_party_leaderboard(limit = 10) -> List[Tuple[Party, int]]:
-    async with async_session() as session:
-        status = [MemberStatusEnum.creator, MemberStatusEnum.founder,
-                  MemberStatusEnum.member, MemberStatusEnum.voter]
-        
         result = await session.execute(
+            select(
+                Party,
+                func.sum(case((User.voted_points != None, User.voted_points), else_=User.points)
+                ).label('total_points')
+            )
+            .join(PartyMember, and_(Party.id == PartyMember.party_id, PartyMember.member_status.in_(status)))
+            .join(User, PartyMember.member_id == User.id)
+            .where(Party.id == party_id)
+            .group_by(Party.id)
+        )
+
+        return result.one()
+
+
+async def get_party_leaderboard(limit=10) -> List[Tuple[Party, int]]:
+    async with async_session() as session:
+        status = [MemberStatusEnum.creator, MemberStatusEnum.founder,
+                  MemberStatusEnum.member, MemberStatusEnum.voter]
+
+        result = await session.execute(
+            select(
+                Party,
+                func.sum(case((User.voted_points != None, User.voted_points), else_=User.points)
+                ).label('total_points')
+            )
+            .join(PartyMember, and_(Party.id == PartyMember.party_id, PartyMember.member_status.in_(status)))
+            .join(User, PartyMember.member_id == User.id)
+            .group_by(Party.id)
+            .order_by(func.sum(case((User.voted_points != None, User.voted_points), else_=User.points)
+            ).desc())
+            .limit(limit)
+        )
+
+        '''result = await session.execute(
             select(
                 Party,
                 func.sum(User.points).label('total_points')
@@ -74,7 +98,7 @@ async def get_party_leaderboard(limit = 10) -> List[Tuple[Party, int]]:
             .group_by(Party.id)
             .order_by(func.sum(User.points).desc())
             .limit(limit)
-        )
+        )'''
 
         leaderboard = result.all()  # Получаем все результаты
     return [(party,  total_points) for party, total_points in leaderboard]
@@ -176,6 +200,14 @@ async def get_party_member(party_id, user_id):
 
         if member:
             return member.member_status
+
+
+async def get_party_members(party_id):
+    async with async_session() as session:
+        members: PartyMember = await session.scalars(select(PartyMember).where(Party.id == party_id, PartyMember.member_status.in_([
+            MemberStatusEnum.creator, MemberStatusEnum.founder, MemberStatusEnum.member])))
+
+        return list(members)
 
 
 async def get_leaderboard(limit=20, offset=0):
@@ -324,21 +356,21 @@ async def get_referres(user: User) -> List[User]:
 
         if not referrer1:
             return []
-        
+
         referrer2 = await session.scalar(select(User).where(User.id == referrer1.referrer_id))
 
         if not referrer2:
             return [referrer1]
-        
+
         referrer3 = await session.scalar(select(User).where(User.id == referrer2.referrer_id))
 
         if not referrer3:
             return [referrer1, referrer2]
         return [referrer1, referrer2, referrer3]
-    
+
+
 async def get_all_referals(user: User):
     async with async_session() as session:
         referrals = await session.scalars(select(User).where(User.referrer_id == user.id))
-        
+
         return referrals
-        

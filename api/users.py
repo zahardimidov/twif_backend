@@ -53,9 +53,6 @@ async def get_leaderboard_handler(
 async def me(request: WebAppRequest, initData: InitDataRequest):
     user = request.webapp_user
 
-    vote = await get_user_vote(user_id=user.id)
-    if vote:
-        return UserResponse(id = user.id, username=user.username, fullname=user.fullname, avatar=user.avatar, points=0, stars=user.stars)
     return UserResponse(id = user.id, username=user.username, fullname=user.fullname, avatar=user.avatar, points=user.points, stars=user.stars)
 
 @router.post('/ref', response_model=RefLinkResponse)

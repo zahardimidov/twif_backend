@@ -4,7 +4,7 @@ from functools import wraps
 from api.schemas import *
 from database.models import MemberStatusEnum, Party
 from database.requests import (create_party, get_party, get_user,
-                               get_user_invites, get_user_party, get_user_vote, delete_invite,
+                               get_user_invites, get_user_party, get_user_vote, delete_invite, get_party_points, get_party_members,
                                get_user_wallet, join_party, set_user, get_party_leaderboard, get_party_related_users)
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.encoders import jsonable_encoder
@@ -76,29 +76,55 @@ async def get_party_by_id(
     return res
 
 
+@router.get('/get_party_points', response_model=PartyPoints)
+async def get_party_by_id(
+    party_id: str = Query(...),
+):
+    points = await get_party_points(party_id=party_id)
+    return PartyPoints(points=points[1])
+
+
+@router.get('/get_party_members', response_model=SearchUsersResponse)
+async def get_party_by_id(
+    party_id: str = Query(...),
+):
+    members = await get_party_members(party_id=party_id)
+
+    response = []
+    for member in members:
+        response.append(dict(
+            party_id = member.party_id,
+            user_id = member.member_id,
+            status = member.member_status
+        ))
+
+    return JSONResponse(status_code=200, content=jsonable_encoder(response))
+
+
 @router.get('/leaderboard', response_model=PartyLeaderboardResponse)
 async def party_leaderboard(
     limit: int = Query(...),
 ):
-    leaderboard =  await get_party_leaderboard(limit)
-    leaders = [PartyResponse(id = p.id, title=p.title, logo=p.logo, chat_url=p.chat_url, level=p.level) for p, _ in leaderboard]
+    leaderboard = await get_party_leaderboard(limit)
+    leaders = [PartyResponse(id=p.id, title=p.title, logo=p.logo,
+                             chat_url=p.chat_url, level=p.level) for p, _ in leaderboard]
 
     response = []
     for ind, l in enumerate(leaders):
         quantity = await get_party_related_users(party_id=l.id, voter=False)
-        response.append(PartyLeaderResponse(**l.__dict__, points=leaderboard[ind][1], quantity=len(quantity), logoURL=l.logoURL))
+        response.append(PartyLeaderResponse(
+            **l.__dict__, points=leaderboard[ind][1], quantity=len(quantity), logoURL=l.logoURL))
 
     print(response)
 
-    return dict(leaders = response)
+    return dict(leaders=response)
+
 
 @router.post('/create', response_model=PartyResponse, response_model_exclude={"logo"})
 @webapp_user_middleware
 @without_party
 async def create_party_handler(request: WebAppRequest, party: PartyCreate = Depends(), logo: UploadFile = File(...)):
     data = dict(party)
-
-    print(data, logo, party)
 
     validate_party_shares(party)
 
@@ -149,7 +175,9 @@ async def check_party_members_count(party: Party | str):
 
     members = await get_party_related_users(voter=False)
     if len(members) >= party.quantity:
-        raise HTTPException(status_code=400, detail='The limit of users in the party is exceeded')
+        raise HTTPException(
+            status_code=400, detail='The limit of users in the party is exceeded')
+
 
 @router.post('/join')
 @webapp_user_middleware
@@ -191,9 +219,10 @@ async def join_squad_as_founder(request: WebAppRequest, party: JoinPartyRequest)
 @webapp_user_middleware
 async def get_all_invites(request: WebAppRequest, initData: InitDataRequest):
     invites = await get_user_invites(user_id=request.webapp_user.id)
-    parties = [PartyResponse(id = i.party.id, title=i.party.title, logo=i.party.logo, chat_url=i.party.chat_url, level=i.party.level) for i in invites]
+    parties = [PartyResponse(id=i.party.id, title=i.party.title, logo=i.party.logo,
+                             chat_url=i.party.chat_url, level=i.party.level) for i in invites]
 
-    return dict(invites = [PartyInviteResponse(**p.__dict__, logoURL=p.logoURL) for p in parties])
+    return dict(invites=[PartyInviteResponse(**p.__dict__, logoURL=p.logoURL) for p in parties])
 
 
 @router.post('/vote')
@@ -201,6 +230,7 @@ async def get_all_invites(request: WebAppRequest, initData: InitDataRequest):
 @without_party
 async def vote_party_handler(request: WebAppRequest, party: VotePartyRequest):
     await join_party(party_id=party.party_id, user_id=request.webapp_user.id)
-    #await set_user(points=0)
+
+    await set_user(user_id=request.webapp_user.id, points=0, voted_points=request.webapp_user.points)
 
     return Response(status_code=200)

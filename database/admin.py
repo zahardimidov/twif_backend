@@ -51,7 +51,7 @@ r = redis.Redis(host=REDIS_HOST, port=6379, db=0)
 
 class UserAdmin(ModelView, model=User):
     column_list = [User.id, User.fullname, User.username,
-                   User.points, User.stars, User.avatar]
+                   User.points, User.voted_points, User.stars, User.avatar]
 
     can_create = False
     can_edit = True

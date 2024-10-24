@@ -19,6 +19,7 @@ class PartyCreate(InitDataRequest):
     nft_requirement: Optional[str] = Field(None, description="NFT color [white, silver or black]")
     twif_requirement: Optional[int] =  Field(None, description="Amount of twif")
 
+
 class SquadCreate(PartyCreate):
     founder_ids: list[int]
 
@@ -30,6 +31,9 @@ class VotePartyRequest(InitDataRequest):
 
 
 ### RESPONSES
+
+class PartyPoints(BaseModel):
+    points: int
 
 class PartyResponse(BaseModel):
     id: str
