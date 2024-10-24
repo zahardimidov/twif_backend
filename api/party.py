@@ -98,6 +98,8 @@ async def party_leaderboard(
 async def create_party_handler(request: WebAppRequest, party: PartyCreate = Depends(), logo: UploadFile = File(...)):
     data = dict(party)
 
+    print(data, logo, party)
+
     validate_party_shares(party)
 
     await check_party_requirements(user_id=request.webapp_user.id, twif=party.twif_requirement, nft=party.nft_requirement)
@@ -132,7 +134,7 @@ async def create_squad_handler(request: WebAppRequest, party: SquadCreate = Depe
 
         await check_party_requirements(user_id=user_id, twif=party.twif_requirement, nft=party.nft_requirement)
 
-    new_party: Party = await create_party(**data)
+    new_party: Party = await create_party(logo=logo, **data)
     await join_party(party_id=new_party.id, user_id=request.webapp_user.id, status=MemberStatusEnum.creator)
 
     for user_id in party.founder_ids:
