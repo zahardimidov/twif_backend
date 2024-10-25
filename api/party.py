@@ -84,7 +84,7 @@ async def get_party_by_id(
     return PartyPoints(points=points[1])
 
 
-@router.get('/get_party_members', response_class=List[PartyMemberResponse])
+@router.get('/get_party_members', response_model=PartyMembersResponse)
 async def get_party_by_id(
     party_id: str = Query(...),
 ):
@@ -92,7 +92,7 @@ async def get_party_by_id(
 
     response = []
     for member in members:
-        response.append(dict(
+        response.append(PartyMemberResponse(
             party_id = member.party_id,
             user_id = member.member_id,
             status = member.member_status,
@@ -101,9 +101,7 @@ async def get_party_by_id(
             avatar = member.member.avatarURL
         ))
 
-    print(f'{party_id=}, {members=}')
-
-    return JSONResponse(status_code=200, content=jsonable_encoder(response))
+    return PartyMembersResponse(members = response)
 
 
 @router.get('/leaderboard', response_model=PartyLeaderboardResponse)

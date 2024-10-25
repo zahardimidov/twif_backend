@@ -77,3 +77,6 @@ class PartyMemberResponse(BaseModel):
     username: str
     fullname: str
     avatar: str
+
+class PartyMembersResponse(BaseModel):
+    members: List[PartyMemberResponse]
