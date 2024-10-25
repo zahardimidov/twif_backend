@@ -204,7 +204,7 @@ async def get_party_member(party_id, user_id):
 
 async def get_party_members(party_id):
     async with async_session() as session:
-        members: PartyMember = await session.scalars(select(PartyMember).where(Party.id == party_id, PartyMember.member_status.in_([
+        members: PartyMember = await session.scalars(select(PartyMember).where(PartyMember.party_id == party_id, PartyMember.member_status.in_([
             MemberStatusEnum.creator, MemberStatusEnum.founder, MemberStatusEnum.member])))
 
         return list(members)
