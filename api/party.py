@@ -98,10 +98,12 @@ async def get_party_by_id(
             status = member.member_status,
             username = member.member.username,
             fullname = member.member.fullname,
-            avatar = member.member.avatarURL
+            avatar = f'/media/avatars/{member.member_id}.png' 
         ))
 
-    return PartyMembersResponse(members = response)
+    print(response)
+
+    return PartyMembersResponse(members=response)
 
 
 @router.get('/leaderboard', response_model=PartyLeaderboardResponse)
