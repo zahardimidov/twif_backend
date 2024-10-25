@@ -84,7 +84,7 @@ async def get_party_by_id(
     return PartyPoints(points=points[1])
 
 
-@router.get('/get_party_members', response_model=SearchUsersResponse)
+@router.get('/get_party_members', response_class=List[PartyMemberResponse])
 async def get_party_by_id(
     party_id: str = Query(...),
 ):
@@ -100,6 +100,8 @@ async def get_party_by_id(
             fullname = member.member.fullname,
             avatar = member.member.avatarURL
         ))
+
+    print(f'{party_id=}, {members=}')
 
     return JSONResponse(status_code=200, content=jsonable_encoder(response))
 
@@ -117,8 +119,6 @@ async def party_leaderboard(
         quantity = await get_party_related_users(party_id=l.id, voter=False)
         response.append(PartyLeaderResponse(
             **l.__dict__, points=leaderboard[ind][1], quantity=len(quantity), logoURL=l.logoURL))
-
-    print(response)
 
     return dict(leaders=response)
 

@@ -69,3 +69,11 @@ class PartyLeaderboardResponse(BaseModel):
 
 class PartyInvites(BaseModel):
     invites: List[PartyInviteResponse]
+
+class PartyMemberResponse(BaseModel):
+    party_id: str
+    user_id: int
+    status: str
+    username: str
+    fullname: str
+    avatar: str
