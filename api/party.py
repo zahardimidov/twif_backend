@@ -176,7 +176,7 @@ async def check_party_members_count(party: Party | str):
     if isinstance(party, str):
         party: Party = await get_party(party_id=party)
 
-    members = await get_party_related_users(voter=False)
+    members = await get_party_related_users(party_id=party.id, voter=False)
     if len(members) >= party.quantity:
         raise HTTPException(
             status_code=400, detail='The limit of users in the party is exceeded')

@@ -101,7 +101,7 @@ class PartyMember(Base):
         'users.id', ondelete='CASCADE'), primary_key=True)
     member: Mapped['User'] = relationship(lazy='subquery')
 
-    member_status = mapped_column(Enum(MemberStatusEnum))
+    member_status = mapped_column(Enum(MemberStatusEnum), nullable=False)
 
     def __repr__(self) -> str:
         return str(self.member) + ' - ' + str(self.party)
