@@ -58,7 +58,7 @@ async def get_party_points(party_id) -> List[User]:
             select(
                 Party,
                 func.sum(case((User.voted_points != None, User.voted_points), else_=User.points)
-                ).label('total_points')
+                         ).label('total_points')
             )
             .join(PartyMember, and_(Party.id == PartyMember.party_id, PartyMember.member_status.in_(status)))
             .join(User, PartyMember.member_id == User.id)
@@ -78,13 +78,13 @@ async def get_party_leaderboard(limit=10) -> List[Tuple[Party, int]]:
             select(
                 Party,
                 func.sum(case((User.voted_points != None, User.voted_points), else_=User.points)
-                ).label('total_points')
+                         ).label('total_points')
             )
             .join(PartyMember, and_(Party.id == PartyMember.party_id, PartyMember.member_status.in_(status)))
             .join(User, PartyMember.member_id == User.id)
             .group_by(Party.id)
             .order_by(func.sum(case((User.voted_points != None, User.voted_points), else_=User.points)
-            ).desc())
+                               ).desc())
             .limit(limit)
         )
 
@@ -144,7 +144,7 @@ async def create_party(**party_data):
         return party
 
 
-async def update_party(party_id, data_dict):
+async def update_party(party_id, **data_dict):
     async with async_session() as session:
         await session.execute(update(Party).where(Party.id == party_id).values(**data_dict))
         await session.commit()
@@ -208,6 +208,12 @@ async def get_party_members(party_id):
             MemberStatusEnum.creator, MemberStatusEnum.founder, MemberStatusEnum.member])))
 
         return list(members)
+    
+async def get_party_creator(party_id):
+    async with async_session() as session:
+        creator: User = await session.scalar(select(User).join(PartyMember).where(PartyMember.party_id == party_id, PartyMember.member_status == MemberStatusEnum.creator))
+
+        return creator
 
 
 async def get_leaderboard(limit=20, offset=0):
@@ -378,6 +384,7 @@ async def get_all_referals(user: User):
 
 async def get_active_season() -> Season:
     async with async_session() as session:
-        seasons = await session.scalars(select(Season).where(Season.is_active == True, Season.deadline > datetime.now(timezone.utc)).order_by(Season.deadline))
-
-        return seasons[0]
+        result = await session.scalars(select(Season).where(Season.is_active == True, Season.deadline > datetime.now(timezone.utc)).order_by(Season.deadline))
+        seasons = list(result)
+        if seasons:
+            return seasons[0]

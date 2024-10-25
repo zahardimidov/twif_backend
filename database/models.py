@@ -68,15 +68,15 @@ class Party(Base):
 
     id = mapped_column(String, primary_key=True, default=generate_uuid)
 
-    title = mapped_column(String)
+    title = mapped_column(String, nullable=False)
     logo = mapped_column(FileType(storage=folder_for_logo))
     description = mapped_column(String, default='')
-    quantity = mapped_column(Integer)
+    quantity = mapped_column(Integer, nullable=False)
 
-    founder_share = mapped_column(Float)
-    members_share = mapped_column(Float)
-    project_share = mapped_column(Float)
-    voters_share = mapped_column(Float)
+    founder_share = mapped_column(Float, nullable=False)
+    members_share = mapped_column(Float, nullable=False)
+    project_share = mapped_column(Float, nullable=False)
+    voters_share = mapped_column(Float, nullable=False)
 
     level = mapped_column(Integer, default=0)
     chat_url = mapped_column(String, nullable=True)
@@ -112,9 +112,9 @@ class Wallet(Base):
     __tablename__ = 'wallets'
 
     id = mapped_column(String, primary_key=True, default=generate_uuid)
-    address = mapped_column(String)
+    address = mapped_column(String, nullable=False)
 
-    user_id = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
+    user_id = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     user: Mapped['User'] = relationship()
 
     def __repr__(self) -> str:
@@ -126,7 +126,7 @@ class Transaction(Base):
 
     boc = mapped_column(String, primary_key=True)
 
-    wallet_id = mapped_column(ForeignKey('wallets.id', ondelete='CASCADE'))
+    wallet_id = mapped_column(ForeignKey('wallets.id', ondelete='CASCADE'), nullable=False)
     wallet: Mapped['Wallet'] = relationship()
 
     
@@ -160,7 +160,7 @@ class DailyBoost(Base):
     __tablename__ = 'dailyboost'
 
     id = mapped_column(String, primary_key=True, default=generate_uuid)
-    stars = mapped_column(Integer)
+    stars = mapped_column(Integer, nullable=False)
     multiplier = mapped_column(Float)
     nolimit = mapped_column(Boolean, default=False)
 
@@ -173,8 +173,8 @@ class StarsOffer(Base):
     __tablename__ = 'store'
 
     id = mapped_column(String, primary_key=True, default=generate_uuid)
-    amount = mapped_column(Integer)
-    ton = mapped_column(Float)
+    amount = mapped_column(Integer, nullable=False)
+    ton = mapped_column(Float, nullable=False)
 
     def __repr__(self) -> str:
         return f'{self.amount} - {self.ton}'
@@ -185,10 +185,10 @@ class UserDailyBoost(Base):
 
     id = mapped_column(String, primary_key=True, default=generate_uuid)
 
-    boost_id = mapped_column(ForeignKey('dailyboost.id', ondelete='CASCADE'))
+    boost_id = mapped_column(ForeignKey('dailyboost.id', ondelete='CASCADE'), nullable=False)
     boost: Mapped['DailyBoost'] = relationship(lazy='subquery')
 
-    user_id = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
+    user_id = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     user: Mapped['User'] = relationship(lazy='subquery')
 
     date = mapped_column(Date, default=lambda: datetime.now(timezone.utc))
@@ -201,10 +201,10 @@ class Task(Base):
 
     id = mapped_column(String, primary_key=True, default=generate_uuid)
 
-    text = mapped_column(String)
-    url = mapped_column(String)
+    text = mapped_column(String, nullable=False)
+    url = mapped_column(String, nullable=False)
 
-    reward = mapped_column(Integer)
+    reward = mapped_column(Integer, nullable=False)
 
     def __repr__(self) -> str:
         return self.text
@@ -214,10 +214,10 @@ class UserTaskCompleted(Base):
 
     id = mapped_column(String, primary_key=True, default=generate_uuid)
 
-    task_id = mapped_column(ForeignKey('tasks.id', ondelete='CASCADE'))
+    task_id = mapped_column(ForeignKey('tasks.id', ondelete='CASCADE'), nullable=False)
     task: Mapped['Task'] = relationship(lazy='subquery')
 
-    user_id = mapped_column(ForeignKey('users.id', ondelete='CASCADE'))
+    user_id = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     user: Mapped['User'] = relationship(lazy='subquery')
 
     def __repr__(self) -> str:
@@ -242,6 +242,8 @@ class RefBoost(Base):
 class Season(Base):
     __tablename__ = 'seasons'
 
-    title = mapped_column(String, primary_key=True)
-    deadline = mapped_column(DateTime(timezone=True))
-    is_active = mapped_column(Boolean, default=True)
+    id = mapped_column(String, primary_key=True, default=generate_uuid)
+
+    title = mapped_column(String, nullable=False)
+    deadline = mapped_column(DateTime(timezone=True), nullable=False)
+    is_active = mapped_column(Boolean, default=True, nullable=False)

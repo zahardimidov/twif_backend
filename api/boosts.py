@@ -105,7 +105,10 @@ async def save_game(request: WebAppRequest, game: SaveGame):
 async def get_deadline(request: Request):
     season = await get_active_season()
 
-    deadline = season.deadline.strftime("%d.%m.%Y")
+    if not season:
+        raise HTTPException(status_code=404, detail='No one active season')
+
+    deadline = season.deadline.strftime("%d.%m.%Y %H:%M")
 
     return JSONResponse(status_code=200, content=jsonable_encoder({
         'deadline': deadline
