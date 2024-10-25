@@ -70,6 +70,7 @@ class Party(Base):
 
     title = mapped_column(String)
     logo = mapped_column(FileType(storage=folder_for_logo))
+    description = mapped_column(String, default='')
     quantity = mapped_column(Integer)
 
     founder_share = mapped_column(Float)

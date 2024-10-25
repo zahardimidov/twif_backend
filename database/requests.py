@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 from database.models import (DailyBoost, MemberStatusEnum, Message, Party,
                              PartyMember, StarsOffer, Task, Transaction, User,
-                             UserDailyBoost, UserTaskCompleted, Wallet)
+                             UserDailyBoost, UserTaskCompleted, Wallet, Season)
 from database.session import async_session
 from sqlalchemy import delete, desc, func, or_, select, update, and_, case
 
@@ -374,3 +374,10 @@ async def get_all_referals(user: User):
         referrals = await session.scalars(select(User).where(User.referrer_id == user.id))
 
         return referrals
+
+
+async def get_active_season() -> Season:
+    async with async_session() as session:
+        seasons = await session.scalars(select(Season).where(Season.is_active == True, Season.deadline > datetime.now(timezone.utc)).order_by(Season.deadline))
+
+        return seasons[0]

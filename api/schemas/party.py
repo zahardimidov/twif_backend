@@ -20,6 +20,10 @@ class PartyCreate(InitDataRequest):
     twif_requirement: Optional[int] =  Field(None, description="Amount of twif")
 
 
+class PartyUpdate(PartyCreate):
+    description: str = ''
+    party_id: str
+
 class SquadCreate(PartyCreate):
     founder_ids: list[int]
 

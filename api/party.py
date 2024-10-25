@@ -5,7 +5,7 @@ from api.schemas import *
 from database.models import MemberStatusEnum, Party
 from database.requests import (create_party, get_party, get_user,
                                get_user_invites, get_user_party, get_user_vote, delete_invite, get_party_points, get_party_members,
-                               get_user_wallet, join_party, set_user, get_party_leaderboard, get_party_related_users)
+                               get_user_wallet, join_party, set_user, get_party_leaderboard, get_party_related_users, update_party)
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, Response
@@ -170,6 +170,22 @@ async def create_squad_handler(request: WebAppRequest, party: SquadCreate = Depe
         await join_party(party_id=new_party.id, user_id=user_id, status=MemberStatusEnum.invited)
 
     return await get_party(party_id=new_party.id)
+
+
+@router.post('/update', response_model=PartyResponse, response_model_exclude={"logo"})
+@webapp_user_middleware
+@without_party
+async def update_party_handler(request: WebAppRequest, party: PartyUpdate = Depends(), logo: UploadFile = File(...)):
+    data = dict(party)
+
+    validate_party_shares(party)
+
+    await check_party_requirements(user_id=request.webapp_user.id, twif=party.twif_requirement, nft=party.nft_requirement)
+
+    update_party(party_id=party.party_id, logo=logo, **data)
+
+    return await get_party(party_id=party.party_id)
+
 
 
 async def check_party_members_count(party: Party | str):

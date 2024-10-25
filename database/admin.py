@@ -237,7 +237,6 @@ def showPhoto(model):
 class SeasonAdmin(ModelView, model=Season):
     column_list = [Season.title, Season.deadline, Season.is_active]
 
-    can_create = False
     can_edit = True
 
     name = 'Сезон'
@@ -262,4 +261,4 @@ def init_admin(app, engine):
     admin.add_view(MessageAdmin)
     admin.add_view(ButtonAdmin)
 
-    #admin.add_view(SeasonAdmin)
+    admin.add_view(SeasonAdmin)

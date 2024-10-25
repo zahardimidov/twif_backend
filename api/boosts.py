@@ -3,7 +3,7 @@ from api.schemas import *
 from config import BOT_TOKEN
 from database.requests import (get_daily_boost, get_daily_boosts,
                                get_user_daily_boost, get_user_wallet, set_user,
-                               set_user_daily_boost, get_referres)
+                               set_user_daily_boost, get_referres, get_active_season)
 from fastapi import APIRouter, HTTPException, Query, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
@@ -99,3 +99,14 @@ async def save_game(request: WebAppRequest, game: SaveGame):
         await set_user(user_id=referres[i], points=referres[i].points + bonus)
 
     return Response(status_code=200)
+
+
+@router.get('/deadline')
+async def get_deadline(request: Request):
+    season = await get_active_season()
+
+    deadline = season.deadline.strftime("%d.%m.%Y")
+
+    return JSONResponse(status_code=200, content=jsonable_encoder({
+        'deadline': deadline
+    }))
