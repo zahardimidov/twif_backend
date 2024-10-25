@@ -139,7 +139,7 @@ async def create_party(**party_data):
         await session.refresh(party)
 
         logo.filename = party.generate_filename()
-        await update_party(party.id, {'logo': logo})
+        await update_party(party.id, logo = logo)
 
         return party
 
