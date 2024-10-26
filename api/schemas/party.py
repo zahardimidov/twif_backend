@@ -43,6 +43,7 @@ class PartyResponse(BaseModel):
     id: str
 
     title: str
+    description: Optional[str] = Field('', description="Party description")
     logo: str
 
     chat_url: Optional[str] = Field(None, description="Telegram Chat URL")
