@@ -23,7 +23,6 @@ class ConnectWalletRequest(InitDataRequest):
 class SetUserDailyBoost(InitDataRequest):
     boost_id: str
 
-
 class UserCompleteTask(InitDataRequest):
     task_id: str
 

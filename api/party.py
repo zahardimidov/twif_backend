@@ -32,7 +32,7 @@ async def check_party_requirements(user_id, twif: int, nft: str):
 
     if twif and (await get_twif_balance(account_id=wallet.address)) < twif:
         raise HTTPException(
-            status_code=400, detail=f"User ({user_id}) doesn't have enought twif")
+            status_code=400, detail=f"User ({user_id}) doesn't have enough twif")
 
     if nft:
         user_nft = await get_account_nft(account_id=wallet.address)
@@ -66,6 +66,20 @@ def without_party(func):
     return wrapper
 
 
+@router.get('/check_user_party_requirements')
+async def check_user_party_requirements(
+    party_id: str = Query(...),
+    user_id: int = Query(...),
+):
+    party = await get_party(party_id=party_id)
+
+    if not party:
+        raise HTTPException(status_code=404, detail='Party not found')
+    
+    await check_party_requirements(user_id=user_id, twif=party.twif_requirement, nft=party.nft_requirement)
+
+    return Response(status_code=200)
+
 @router.get('/get', response_model=PartyResponse, response_model_exclude={"logo"})
 async def get_party_by_id(
     party_id: str = Query(...),
@@ -75,6 +89,18 @@ async def get_party_by_id(
         raise HTTPException(status_code=404, detail='Party not found')
     return res
 
+@router.get('/get_user_party', response_model=PartyResponse, response_model_exclude={"logo"})
+async def get_user_party_handler(
+    user_id: int = Query(...)
+):
+    party_member = await get_user_party(user_id)
+    if not party_member:
+        raise HTTPException(status_code=404, detail='Party not found')
+    
+    res = await get_party(party_id=party_member.party_id)
+    if not res:
+        raise HTTPException(status_code=404, detail='Party not found')
+    return res
 
 @router.get('/get_party_points', response_model=PartyPoints)
 async def get_party_by_id(
@@ -149,7 +175,7 @@ async def create_squad_handler(request: WebAppRequest, party: SquadCreate = Depe
 
     await check_party_requirements(user_id=request.webapp_user.id, twif=party.twif_requirement, nft=party.nft_requirement)
 
-    for user_id in party.founder_ids:
+    for user_id in data.pop('founder_ids'):
         user = await get_user(user_id)
 
         if not user:

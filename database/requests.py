@@ -177,7 +177,7 @@ async def get_user_vote(user_id):
         return vote
 
 
-async def get_user_party(user_id):
+async def get_user_party(user_id) -> PartyMember:
     async with async_session() as session:
         party = await session.scalar(select(PartyMember).where(
             PartyMember.member_id == user_id, PartyMember.member_status != MemberStatusEnum.invited))
