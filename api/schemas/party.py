@@ -44,14 +44,14 @@ class PartyResponse(BaseModel):
 
     title: str
     description: Optional[str] = Field('', description="Party description")
-    logo: Optional[str] = Field('empty', description="Party logo")
+    logo: Optional[str]
 
     chat_url: Optional[str] = Field(None, description="Telegram Chat URL")
     level: int
 
     @computed_field
     def logoURL(self) -> str:
-        return WEBHOOK_HOST + f"/media/logos/{self.logo.split('/')[-1]}"
+        return WEBHOOK_HOST + f"/media/logos/{str(self.logo).split('/')[-1]}"
 
 
 class PartyLeaderResponse(BaseModel):
