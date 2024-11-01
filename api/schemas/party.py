@@ -44,7 +44,7 @@ class PartyResponse(BaseModel):
 
     title: str
     description: Optional[str] = Field('', description="Party description")
-    logo: str
+    logo: Optional[str] = Field('empty', description="Party logo")
 
     chat_url: Optional[str] = Field(None, description="Telegram Chat URL")
     level: int
