@@ -255,11 +255,12 @@ async def join_squad_as_founder(request: WebAppRequest, party: JoinPartyRequest)
     for invite in invites:
         if party.party_id == invite.party_id:
             party: Party = await get_party(party_id=party.party_id)
+
             await check_party_requirements(user_id=request.webapp_user.id, twif=party.twif_requirement, nft=party.nft_requirement)
             await check_party_members_count(party=party)
 
-            await delete_invite(user_id=request.webapp_user.id, party_id=party.party_id)
-            await join_party(party_id=party.party_id, user_id=request.webapp_user.id, status=MemberStatusEnum.founder)
+            await delete_invite(user_id=request.webapp_user.id, party_id=party.id)
+            await join_party(party_id=party.id, user_id=request.webapp_user.id, status=MemberStatusEnum.founder)
 
             return Response(status_code=200)
 
