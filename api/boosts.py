@@ -85,6 +85,18 @@ async def get_attempts(request: WebAppRequest, initData: InitDataRequest):
     return JSONResponse(status_code=200, content=jsonable_encoder({'attempts': 6}))
 
 
+@router.post('/add_attempt')
+@webapp_user_middleware
+async def get_attempts(request: WebAppRequest, initData: InitDataRequest):
+    if request.webapp_user.attempts < 6:
+        new_attempts = request.webapp_user.attempts + 1
+        
+        la = datetime.now(timezone.utc)
+        await set_user(user_id=request.webapp_user.id, attempts = new_attempts, last_attempt=la)
+    
+    return JSONResponse(status_code=200, content=jsonable_encoder({'detail': 'success'}))
+
+
 @router.post('/save_game')
 @webapp_user_middleware
 async def save_game(request: WebAppRequest, game: SaveGame):
